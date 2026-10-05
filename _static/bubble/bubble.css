@@ -1,0 +1,82 @@
+/* Shared styling for the Bubble Game. oTree pages use Bootstrap; this layers the
+   three interfaces (plain, hedonic, directive) on top of it. */
+:root {
+  --ink:#1D2733; --muted:#5B6776; --rule:#DCE3EA; --paper:#FFFFFF; --soft:#EEF3F8;
+  --accent:#2F5D8A; --accent-ink:#FFFFFF; --warn:#8A5A00; --warn-bg:#FFF6DD;
+  --h-pink:#FF5C8A; --h-amber:#FFB020; --h-mint:#1FBF86; --h-bg:#FFF4F8;
+  --d-gold:#C98F00; --d-green:#16935D; --d-bg:#F3FBF6; --d-night:#10261C;
+}
+body { color:var(--ink); font-size:1.05rem; }
+.otree-body { max-width:46rem; }
+.muted { color:var(--muted); font-size:.92rem; }
+.panel { background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:1.1rem 1.2rem; margin:.8rem 0; }
+.rules-table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; margin:.4rem 0 .8rem; }
+.rules-table th, .rules-table td { padding:.45rem .55rem; border-bottom:1px solid var(--rule); text-align:left; }
+.rules-table th { color:var(--muted); font-weight:600; font-size:.9rem; }
+.rules-table .num { text-align:right; }
+.outcome { background:var(--soft); border-radius:8px; padding:.8rem 1rem; margin:.8rem 0; }
+.outcome p { margin:.2rem 0; }
+.outcome .earned { font-size:1.25rem; }
+
+/* decision table: radio buttons styled as a two-way switch */
+.decide { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+.decide td, .decide th { padding:.45rem .5rem; border-bottom:1px solid var(--rule); }
+.decide td.price { font-weight:600; text-align:right; width:7rem; }
+.seg { display:inline-flex; border:1px solid var(--rule); border-radius:8px; overflow:hidden; }
+.seg label { margin:0; cursor:pointer; }
+.seg input { position:absolute; opacity:0; width:1px; height:1px; }
+.seg span { display:inline-block; padding:.45rem .9rem; min-width:5.4rem; text-align:center; background:var(--paper); }
+.seg label + label span { border-left:1px solid var(--rule); }
+.seg input:checked + span { background:var(--accent); color:var(--accent-ink); font-weight:600; }
+.seg input:focus-visible + span { outline:3px solid var(--accent); outline-offset:-3px; }
+.tag-xp { font-size:.78rem; font-weight:700; color:var(--d-green); margin-left:.4rem; white-space:nowrap; }
+.progress-dots { display:flex; gap:.35rem; margin:.2rem 0 1rem; }
+.progress-dots span { width:.7rem; height:.7rem; border-radius:50%; background:var(--rule); }
+.progress-dots span.done { background:var(--accent); }
+
+/* hedonic interface */
+.cond-hedonic { background:var(--h-bg); border-radius:14px; padding:1.2rem; }
+.cond-hedonic .cond-title { background:linear-gradient(90deg,var(--h-pink),var(--h-amber)); -webkit-background-clip:text; background-clip:text; color:transparent; font-weight:800; }
+.cond-hedonic .seg input:checked + span { background:var(--h-pink); color:#fff; }
+.cond-hedonic .otree-btn-next, .cond-hedonic .btn-primary { background:linear-gradient(90deg,var(--h-pink),var(--h-amber)); border:0; border-radius:999px; }
+.cond-hedonic .progress-dots span.done { background:var(--h-mint); }
+.lockin { text-align:center; }
+.lockin .big { font-size:3.6rem; display:inline-block; animation:pop .55s cubic-bezier(.2,1.5,.4,1); }
+@keyframes pop { from { transform:scale(.3) rotate(-20deg); opacity:0; } to { transform:scale(1) rotate(0); opacity:1; } }
+
+/* directive interface */
+.cond-directive { background:var(--d-bg); border-radius:14px; padding:1.2rem; }
+.cond-directive .seg input:checked + span { background:var(--d-green); color:#fff; }
+.cond-directive .otree-btn-next, .cond-directive .btn-primary { background:var(--d-green); border-color:var(--d-green); }
+.xp { display:flex; align-items:center; gap:.7rem; background:var(--paper); border:1px solid var(--d-gold); border-radius:12px; padding:.55rem .8rem; margin:.3rem 0 1rem; }
+.xp .lvl { font-weight:800; color:var(--d-gold); white-space:nowrap; }
+.xp .track { flex:1; height:.65rem; background:var(--soft); border-radius:999px; overflow:hidden; }
+.xp .fill { height:100%; background:linear-gradient(90deg,var(--d-gold),var(--d-green)); }
+.xp .pts { font-variant-numeric:tabular-nums; font-weight:700; white-space:nowrap; }
+.shelf { display:grid; grid-template-columns:repeat(auto-fit,minmax(9rem,1fr)); gap:.6rem; margin:.5rem 0 1rem; }
+.badge-card { border:1px dashed var(--rule); border-radius:12px; padding:.7rem; background:var(--paper); color:var(--muted); font-size:.85rem; }
+.badge-card .ic { font-size:1.6rem; display:block; filter:grayscale(1); opacity:.35; }
+.badge-card strong { display:block; color:var(--ink); font-size:.95rem; }
+.badge-card.on { border:1px solid var(--d-gold); }
+.badge-card.on .ic { filter:none; opacity:1; }
+.modal-back { position:fixed; inset:0; background:rgba(8,20,14,.6); display:flex; align-items:center; justify-content:center; z-index:1050; padding:1rem; }
+.modal-badge { background:var(--d-night); color:#fff; border-radius:18px; padding:1.6rem 2rem; text-align:center; width:min(22rem,100%); animation:pop .45s cubic-bezier(.2,1.4,.4,1); }
+.modal-badge .k { color:#F6C445; font-weight:700; }
+.modal-badge .ic { font-size:3.6rem; margin:.3rem 0; }
+.modal-badge .n { font-size:1.4rem; font-weight:800; }
+.modal-badge .d { color:#C9D6CF; margin:.3rem 0 1rem; }
+.modal-badge button { background:#F6C445; color:#10261C; border:0; border-radius:999px; padding:.55rem 1.6rem; font-weight:800; }
+
+/* payment reveal */
+.chips { display:grid; grid-template-columns:repeat(auto-fill,minmax(9rem,1fr)); gap:.5rem; margin:1rem 0; }
+.chip { border:1px solid var(--rule); border-radius:8px; padding:.55rem .7rem; background:var(--paper); display:flex; justify-content:space-between; gap:.5rem; font-size:.92rem; }
+.chip.lit { background:var(--soft); border-color:var(--accent); }
+.chip.won { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:700; }
+.cash-card { border:2px solid var(--accent); border-radius:12px; padding:1rem 1.2rem; margin:1rem 0 1.4rem; text-align:center; }
+.cash-card .seat { font-weight:700; color:var(--muted); margin:0; text-transform:uppercase; letter-spacing:.06em; font-size:.85rem; }
+.cash-card .amount { font-size:3rem; font-weight:800; margin:.1rem 0 .3rem; font-variant-numeric:tabular-nums; }
+.paid-row { background:var(--soft); font-weight:600; }
+
+#confetti { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:1040; }
+@media (max-width:520px) { .seg span { min-width:4.4rem; padding:.45rem .5rem; } }
+@media (prefers-reduced-motion: reduce) { .lockin .big, .modal-badge { animation:none; } }

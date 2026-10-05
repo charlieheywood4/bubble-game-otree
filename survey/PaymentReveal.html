@@ -1,0 +1,58 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}Revealing the paid game{{ endblock }}
+{{ block content }}
+<p>You have finished all {{ n }} games. One game was drawn at random for this session, and <strong>everyone in the session is paid for that same game</strong>. Every game had the same chance of being drawn. The practice game is not included.</p>
+
+<div class="chips">
+  {{ for g in games }}
+  <div class="chip"><span>Part {{ g.part }}, game {{ g.game }}</span><strong>${{ g.earn }}</strong></div>
+  {{ endfor }}
+</div>
+
+<button type="button" class="btn btn-primary" id="reveal">Reveal the paid game</button>
+
+<div id="after" hidden>
+  <div class="outcome" role="status">
+    <p>The game paid for everyone in this session is <strong>part {{ paid.part }}, game {{ paid.game }}</strong>.</p>
+  </div>
+  <div class="cash-card">
+    {{ if participant.label }}<p class="seat">Computer {{ participant.label }}</p>{{ endif }}
+    <p class="amount">{{ total }}</p>
+    <p>Your payment, in cash. Please stay seated. When your computer number is called, come to the front to collect your payment.</p>
+  </div>
+
+  <h4>All your games</h4>
+  <div class="table-responsive">
+    <table class="rules-table">
+      <tr><th>Part</th><th>Game</th><th>Position</th><th class="num">Price offered</th><th>Result</th><th class="num">Earned</th></tr>
+      {{ for g in games }}
+      <tr{{ if g.round == paid.round }} class="paid-row"{{ endif }}>
+        <td>{{ g.part }}</td><td>{{ g.game }}</td><td>{{ g.position }} of 5</td><td class="num">${{ g.offered }}</td><td>{{ g.outcome }}</td><td class="num">${{ g.earn }}</td>
+      </tr>
+      {{ endfor }}
+    </table>
+  </div>
+  <p>Thank you for participating.</p>
+</div>
+{{ endblock }}
+{{ block scripts }}
+<script>
+(function () {
+  var btn = document.getElementById('reveal'), chips = document.querySelectorAll('.chip');
+  var pick = js_vars.pick, n = chips.length;
+  function light(k) { chips.forEach(function (c, j) { c.classList.toggle('lit', j === k); }); }
+  function done() { light(pick); chips[pick].classList.add('won'); btn.hidden = true; document.getElementById('after').hidden = false; }
+  btn.onclick = function () {
+    btn.disabled = true;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return done();
+    // spin through the games a few times, slowing down, and stop on the paid one
+    var steps = n * 3 + pick, i = 0, delay = 60;
+    (function tick() {
+      light(i % n);
+      if (i >= steps) return done();
+      i++; delay = Math.min(delay * 1.07, 320); setTimeout(tick, delay);
+    })();
+  };
+})();
+</script>
+{{ endblock }}

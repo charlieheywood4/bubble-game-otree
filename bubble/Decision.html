@@ -1,0 +1,45 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}{{ if player.part == 0 }}Practice game{{ else }}Part {{ player.part }}: game {{ game }} of {{ C.GAMES_PER_PART }}{{ endif }}{{ endblock }}
+{{ block content }}
+<div class="cond-{{ player.interface }}">
+  {{ if player.interface == 'directive' }}
+  <div class="xp"><span class="lvl">Level {{ xp.level }}</span><div class="track" aria-hidden="true"><div class="fill" style="width:{{ xp.into }}%"></div></div><span class="pts">{{ xp.xp }} XP</span></div>
+  {{ endif }}
+  <p>For each price, would you buy the asset if it were offered to you at that price?
+    {{ if player.prices_desc }}<strong>In this part, prices are listed from highest to lowest.</strong>{{ endif }}</p>
+  <table class="decide">
+    <thead><tr><th class="price">If offered at</th><th>Your choice</th></tr></thead>
+    <tbody>
+    {{ for r in rows }}
+      <tr>
+        <td class="price">${{ r.price }}</td>
+        <td>
+          <div class="seg" role="radiogroup" aria-label="Choice at ${{ r.price }}">
+            <label><input type="radio" name="{{ r.field }}" value="True" required><span>Buy</span></label>
+            <label><input type="radio" name="{{ r.field }}" value="False"><span>Don't buy</span></label>
+          </div>
+          {{ if player.interface == 'directive' }}<span class="tag-xp">+{{ C.XP_PER_BUY }} XP</span>{{ endif }}
+        </td>
+      </tr>
+    {{ endfor }}
+    </tbody>
+  </table>
+  <p class="muted mt-3">Buying and reselling earns the next trader's price minus yours, buying without reselling earns {{ C.EARN_STUCK }}, and not buying earns {{ C.EARN_NOACTION }}. Any price left unanswered when time runs out counts as "don't buy."</p>
+  <button class="otree-btn-next btn btn-primary" id="lock-in" disabled>Lock in my choices</button>
+</div>
+{{ endblock }}
+{{ block scripts }}
+<script>
+  // enable the button only when every price has an answer
+  (function () {
+    var form = document.getElementById('form'), btn = document.getElementById('lock-in');
+    function check() {
+      var names = {}, done = 0;
+      form.querySelectorAll('.decide input[type=radio]').forEach(function (r) { names[r.name] = names[r.name] || r.checked; });
+      var keys = Object.keys(names); keys.forEach(function (k) { if (names[k]) done++; });
+      btn.disabled = done < keys.length;
+    }
+    form.addEventListener('change', check); check();
+  })();
+</script>
+{{ endblock }}

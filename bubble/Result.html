@@ -1,0 +1,68 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}{{ if player.part == 0 }}Practice game result{{ else }}Part {{ player.part }}: game {{ game }} result{{ endif }}{{ endblock }}
+{{ block content }}
+<div class="cond-{{ player.interface }}">
+  {{ if player.interface == 'hedonic' }}
+  <div class="lockin">
+    <div class="big" aria-hidden="true">{{ icon }}</div>
+    <h3 class="cond-title">{{ cheer }}</h3>
+    <p>Game {{ game }} of {{ C.GAMES_PER_PART }} complete.</p>
+  </div>
+  {{ elif player.interface == 'directive' }}
+  <h3>+{{ player.xp_gained }} XP earned</h3>
+  <div class="xp"><span class="lvl">Level {{ xp.level }}</span><div class="track" aria-hidden="true"><div class="fill" style="width:{{ xp.into }}%"></div></div><span class="pts">{{ xp.xp }} XP</span></div>
+  {{ endif }}
+
+  <div class="outcome">
+    <p>You were trader {{ player.position }} of {{ C.PLAYERS_PER_GROUP }}. {{ message }}</p>
+    <p class="earned">You earned <strong>{{ player.earn }}</strong> in this game{{ if player.part == 0 }} (practice, not paid){{ endif }}.</p>
+  </div>
+  {{ if player.timed_out }}<p class="muted">Time ran out. Unanswered prices were recorded as "don't buy."</p>{{ endif }}
+
+  {{ if player.interface == 'directive' }}
+  <p>You chose to buy at {{ buys }} of {{ n_prices }} prices in this game.{{ if buys == 0 }} Buy at more prices to earn XP and unlock badges.{{ endif }}</p>
+  <h4>Your badges</h4>
+  <div class="shelf">
+    {{ for b in shelf }}
+    <div class="badge-card{{ if b.on }} on{{ endif }}"><span class="ic" aria-hidden="true">{{ b.icon }}</span><strong>{{ b.name }}</strong>{{ b.desc }}</div>
+    {{ endfor }}
+  </div>
+  {{ for b in new_badges }}
+  <div class="modal-back badge-popup" role="dialog" aria-modal="true" hidden>
+    <div class="modal-badge"><div class="k">Badge unlocked</div><div class="ic" aria-hidden="true">{{ b.icon }}</div><div class="n">{{ b.name }}</div><div class="d">{{ b.desc }}</div><button type="button" class="collect">Collect</button></div>
+  </div>
+  {{ endfor }}
+  {{ endif }}
+
+  {{ next_button }}
+</div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+{{ endblock }}
+{{ block scripts }}
+<script>
+(function () {
+  // badge pop-ups, one at a time
+  var pops = Array.prototype.slice.call(document.querySelectorAll('.badge-popup'));
+  function next() { var p = pops.shift(); if (!p) return; p.hidden = false; var b = p.querySelector('.collect'); b.focus(); b.onclick = function () { p.remove(); next(); }; }
+  if (pops.length) setTimeout(next, 350);
+
+  // hedonic confetti after every submission, whatever was chosen
+  if (!js_vars.confetti || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  var c = document.getElementById('confetti'), ctx = c.getContext('2d');
+  var W = c.width = innerWidth, H = c.height = innerHeight, parts = [];
+  var colors = ['#FF5C8A', '#FFB020', '#1FBF86', '#5B8CFF', '#B36BFF'];
+  for (var i = 0; i < 170; i++) parts.push({ x:W / 2 + (Math.random() - .5) * W * .3, y:H * .35, vx:(Math.random() - .5) * 14, vy:-Math.random() * 14 - 4,
+    w:6 + Math.random() * 6, h:8 + Math.random() * 8, r:Math.random() * 3, vr:(Math.random() - .5) * .3, col:colors[i % colors.length] });
+  var start = performance.now();
+  (function frame(t) {
+    var age = t - start; ctx.clearRect(0, 0, W, H);
+    parts.forEach(function (p) {
+      p.vy += .35; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(0, 1 - age / 2800);
+      ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore();
+    });
+    if (age < 2800) requestAnimationFrame(frame); else ctx.clearRect(0, 0, W, H);
+  })(start);
+})();
+</script>
+{{ endblock }}

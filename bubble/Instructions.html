@@ -1,0 +1,48 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}How the game works{{ endblock }}
+{{ block content }}
+<div class="panel">
+  <p>You will play a short trading game many times in groups of five. All the other traders in your games are real participants in this room. In each game the five traders are placed in a random line, and you will not know your place when you decide.</p>
+  <p>An asset is offered to the first trader for ${{ C.START_PRICE }}, and then to each trader in turn:</p>
+  <ul>
+    <li>If a trader <strong>buys</strong>, the asset is offered to the next trader at <strong>twice</strong> the price.</li>
+    <li>If a trader <strong>does not buy</strong>, the asset is offered to the next trader at the <strong>same</strong> price.</li>
+  </ul>
+  <p>Every trader is offered the asset once. <strong>The asset itself pays nothing.</strong> Its only value is the chance to resell it to a trader later in line.</p>
+</div>
+
+<h4>What you can earn in each game</h4>
+<div class="panel">
+  <table class="rules-table">
+    <tr><td>You do not buy</td><td class="num">{{ C.EARN_NOACTION }}</td></tr>
+    <tr><td>You buy and a later trader buys it from you</td><td class="num">Their price minus your price</td></tr>
+    <tr><td>You buy and no one after you buys, or you are last in line</td><td class="num">{{ C.EARN_STUCK }}</td></tr>
+  </table>
+  <p class="muted">You never pay the price out of your own money.</p>
+</div>
+
+<h4>What reselling pays at each price</h4>
+<div class="panel">
+  <table class="rules-table">
+    <tr><th>You buy at</th><th class="num">Next trader buys at</th><th class="num">You earn</th></tr>
+    {{ for r in resale_rows }}
+    <tr><td>${{ r.buy }}</td><td class="num">${{ r.sell }}</td><td class="num">${{ r.earn }}</td></tr>
+    {{ endfor }}
+    <tr><td>${{ last_price }}</td><td class="num">No one can buy after you</td><td class="num">{{ C.EARN_STUCK }}</td></tr>
+  </table>
+</div>
+
+<h4>Your position in line</h4>
+<div class="panel">
+  <p>The first trader is always offered the asset at ${{ C.START_PRICE }}. Because a refused asset is passed on at the same price, the price you are offered usually does not tell you your position, so you usually cannot be sure anyone will buy after you.</p>
+</div>
+
+<h4>Deciding and getting paid</h4>
+<div class="panel">
+  <p>In each game you say whether you would buy at every price you could be offered. Only your decision at the price you are actually offered counts.</p>
+  <p>You will play one unpaid practice game, then two parts of {{ C.GAMES_PER_PART }} games each. You are placed in a new random group and a new place in line in every game. Right after each game you will see what happened and how much you earned in that game.</p>
+  <p>One of the {{ C.GAMES_PER_PART }}&nbsp;×&nbsp;2 paid games was chosen at random for this session. Everyone in the room is paid for that same game, and it is revealed at the end. Since any game could be the one that counts, treat each one as if it determines your payment.</p>
+</div>
+
+{{ next_button }}
+{{ endblock }}

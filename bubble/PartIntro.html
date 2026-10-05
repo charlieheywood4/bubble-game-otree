@@ -1,0 +1,25 @@
+{{ extends 'global/Page.html' }}
+{{ block title }}{{ if player.part == 0 }}Practice{{ else }}Part {{ player.part }}{{ endif }}{{ endblock }}
+{{ block content }}
+<div class="cond-{{ player.interface }}">
+  {{ if player.part == 0 }}
+    <p>You will now play one practice game. It is not paid.</p>
+  {{ else }}
+    <p class="cond-title">Part {{ player.part }} of 2</p>
+    <p>You will now play {{ C.GAMES_PER_PART }} games. The game and the payment rules are exactly the same as before. You will be placed in a new random group in every game.</p>
+    {{ if player.interface == 'hedonic' }}
+      <p>In this part, the screens will include colors and animations. <strong>These do not affect your earnings.</strong> There is no right or wrong strategy.</p>
+    {{ elif player.interface == 'directive' }}
+      <p>In this part, you will earn experience points and badges based on your choices. <strong>Points and badges have no monetary value and do not affect your earnings.</strong> There is no right or wrong strategy.</p>
+      <div class="shelf">
+        {{ for b in shelf }}
+        <div class="badge-card"><span class="ic" aria-hidden="true">{{ b.icon }}</span><strong>{{ b.name }}</strong>{{ b.desc }}</div>
+        {{ endfor }}
+      </div>
+    {{ else }}
+      <p>In this part, the screens show your choices in a standard format. There is no right or wrong strategy.</p>
+    {{ endif }}
+  {{ endif }}
+  {{ next_button }}
+</div>
+{{ endblock }}
