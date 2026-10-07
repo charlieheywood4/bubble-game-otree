@@ -31,6 +31,29 @@ a timed-out decision, and the shared paid game.
   so the six groups and price directions keep rotating evenly across sessions.
 - **timers:** 45 seconds per decision (90 for practice).
 
+## Running several sessions
+
+Set **rotation_offset** to the total number of participants in all earlier sessions, so the
+six groups stay balanced overall. Three sessions of 10, for example: 0, then 10, then 20.
+With those offsets the 30 participants split exactly 5 per group.
+
+Create each session in the **econ_lab** room with exactly the number of people who showed up,
+rounded down to a multiple of 5. A session waiting for people who never arrive cannot finish.
+Before the next session starts, go to **Rooms → econ_lab** and close the room's current session.
+
+## When a participant gets stuck or leaves
+
+- **Decision pages** have a timer. If someone stops responding or closes the browser, the
+  server submits their page when time runs out (every price counts as "don't buy", and
+  `timed_out` is recorded), so the group keeps going. This needs the production server.
+- **Pages without a timer** (welcome, instructions, comprehension check, part intros, results,
+  financial literacy): in the session's **Monitor** tab, click **Advance slowest participants**.
+  Skipped answers are stored as blank, never as answers the participant did not give, and are
+  flagged: `skipped` (demographics), `cq_skipped` (comprehension), `finlit_skipped`
+  (financial literacy, with no score).
+- A participant who closed the browser can reopen the room link and type the same station
+  number. They return to the page they were on.
+
 ## Structure
 
 - `demographics/`: confirms the station number, then asks gender and major (broad groups).

@@ -46,6 +46,8 @@ class Player(BasePlayer):
         choices=C.MAJORS,
         widget=widgets.RadioSelect,
     )
+    # True if the experimenter skipped this participant past the page
+    skipped = models.BooleanField(initial=False)
 
 
 class Demographics(Page):
@@ -56,6 +58,14 @@ class Demographics(Page):
     def error_message(player: Player, values):
         if values['gender_self'] and values['gender'] != 'Prefer to self-describe':
             return 'Leave the description box empty unless you chose "Prefer to self-describe."'
+
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        # A forced advance fills unanswered fields with '', so record them as missing instead
+        if timeout_happened:
+            player.gender = player.major = None
+            player.gender_self = ''
+            player.skipped = True
 
 
 page_sequence = [Demographics]
