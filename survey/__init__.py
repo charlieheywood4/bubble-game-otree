@@ -44,6 +44,8 @@ class Player(BasePlayer):
         ['They will rise', 'They will fall', 'They will stay the same',
          'There is no relationship between bond prices and the interest rate', 'Do not know'])
     finlit_score = models.IntegerField()
+    # True if the experimenter skipped this participant past the questions
+    finlit_skipped = models.BooleanField(initial=False)
 
 
 FL_ANSWERS = dict(fl_interest=0, fl_inflation=2, fl_risk=1, fl_mortgage=0, fl_bonds=1)
@@ -55,8 +57,16 @@ class FinLit(Page):
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        player.finlit_score = sum(getattr(player, k) == a for k, a in FL_ANSWERS.items())
-        player.participant.finlit_score = player.finlit_score
+        if timeout_happened:
+            # A forced advance fills unanswered questions with 0, which is the correct answer
+            # to two of them. Record the answers and score as missing instead.
+            for k in FL_ANSWERS:
+                setattr(player, k, None)
+            player.finlit_skipped = True
+            player.finlit_score = None
+        else:
+            player.finlit_score = sum(getattr(player, k) == a for k, a in FL_ANSWERS.items())
+        player.participant.finlit_score = player.field_maybe_none('finlit_score')
 
 
 class PaymentReveal(Page):
