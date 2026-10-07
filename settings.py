@@ -4,7 +4,7 @@ SESSION_CONFIGS = [
     dict(
         name='bubble_study',
         display_name='Bubble Game study (groups of 5)',
-        app_sequence=['bubble', 'survey'],
+        app_sequence=['demographics', 'bubble', 'survey'],
         num_demo_participants=5,
         # 0 = draw the paid game at random when the session is created; 1-10 fixes it
         paid_game=0,
@@ -36,8 +36,9 @@ PARTICIPANT_FIELDS = [
 SESSION_FIELDS = ['paid_round']
 
 ROOMS = [
-    # Participants type their computer number (1-40) when they open the room link,
-    # so the Payments page lists cash owed by computer.
+    # Participants type the random station number from their paper slip when they open
+    # the room link. Only the 36 numbers in the label file are accepted, and the
+    # Payments page lists cash owed by station number. Names are never entered.
     dict(name='econ_lab', display_name='Economics lab', participant_label_file='_rooms/econ_lab.txt'),
 ]
 

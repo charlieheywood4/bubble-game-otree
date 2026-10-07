@@ -33,6 +33,7 @@ a timed-out decision, and the shared paid game.
 
 ## Structure
 
+- `demographics/`: confirms the station number, then asks gender and major (broad groups).
 - `bubble/`: instructions, comprehension check, practice (round 1), part 1 (rounds 2–6),
   part 2 (rounds 7–11). Groups and positions are re-randomized every round.
 - `survey/`: financial literacy questions, then the paid-game reveal.
@@ -41,10 +42,11 @@ a timed-out decision, and the shared paid game.
 
 ## Paying in cash
 
-- Number the lab computers 1–40. When a participant opens the room link, they type their
-  computer number, so **Payments** in the admin lists the cash owed by computer.
-- The last screen shows the computer number and the amount in large type. Call participants
-  to the front one at a time by computer number and pay the amount on the Payments page.
+- Each participant draws a paper slip with a random station number. When they open the room
+  link, they type that number; `_rooms/econ_lab.txt` lists the 36 valid numbers, and oTree
+  rejects any other. **Payments** in the admin lists the cash owed by station number.
+- The last screen shows the station number and the amount in large type. Call participants
+  to the front one at a time by station number and pay the envelope labeled with that number.
 - Payments are whole dollars from $0 to $24 ($3, $5, $6, $12, or $24). The most a full group
   of 5 can cost is $45, so 30 participants cost at most $270. Bring mostly $1 and $5 bills.
 
