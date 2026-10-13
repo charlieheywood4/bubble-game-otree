@@ -29,7 +29,14 @@ body { color:var(--ink); font-size:1.05rem; }
 .seg label + label span { border-left:1px solid var(--rule); }
 .seg input:checked + span { background:var(--accent); color:var(--accent-ink); font-weight:600; }
 .seg input:focus-visible + span { outline:3px solid var(--accent); outline-offset:-3px; }
-.game-size { background:var(--soft); border-radius:8px; padding:.45rem .7rem; display:inline-block; }
+.cq-q { font-weight:600; font-size:1.05rem; }
+.cq-opt { display:block; padding:.35rem .5rem; margin:.2rem 0; border:1px solid var(--rule); border-radius:8px; cursor:pointer; }
+.cq-opt input { margin-right:.4rem; }
+.cq-feedback { border-radius:8px; padding:.6rem .8rem; margin:.6rem 0; }
+.cq-feedback p { margin:.2rem 0; }
+.cq-feedback.ok { background:#E7F6EE; border:1px solid #16935D; }
+.cq-feedback.no { background:#FDEDE7; border:1px solid #C2410C; }
+.cq-verdict { font-weight:700; }
 .tag-xp { font-size:.78rem; font-weight:700; color:var(--d-green); margin-left:.4rem; white-space:nowrap; }
 .progress-dots { display:flex; gap:.35rem; margin:.2rem 0 1rem; }
 .progress-dots span { width:.7rem; height:.7rem; border-radius:50%; background:var(--rule); }

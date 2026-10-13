@@ -5,7 +5,7 @@
 
 <div class="chips">
   {{ for g in games }}
-  <div class="chip"><span>Part {{ g.part }}, game {{ g.game }}</span><strong>${{ g.earn }}</strong></div>
+  <div class="chip"><span>Part {{ g.part }}, game {{ g.game }}</span><strong>{{ g.earn_text }}</strong></div>
   {{ endfor }}
 </div>
 
@@ -28,7 +28,7 @@
       <tr><th>Part</th><th>Game</th><th>Position</th><th class="num">Price offered</th><th>Result</th><th class="num">Earned</th></tr>
       {{ for g in games }}
       <tr{{ if g.round == paid.round }} class="paid-row"{{ endif }}>
-        <td>{{ g.part }}</td><td>{{ g.game }}</td><td>{{ g.position }} of {{ g.size }}</td><td class="num">${{ g.offered }}</td><td>{{ g.outcome }}</td><td class="num">${{ g.earn }}</td>
+        <td>{{ g.part }}</td><td>{{ g.game }}</td><td>{{ g.position }} of {{ g.size }}</td><td class="num">{{ g.offered_text }}</td><td>{{ g.outcome }}</td><td class="num">{{ g.earn_text }}</td>
       </tr>
       {{ endfor }}
     </table>

@@ -3,14 +3,15 @@ import random
 
 doc = """
 Bubble Game (Moinas and Pouget 2013), adapted from Huber (github.com/chr-huber/bg).
-Participants are split into groups of 3 to 5 that are as equal in size as possible
-(6 -> 3+3, 7 -> 3+4, ... 10 -> 5+5, 13 -> 4+4+5), re-drawn every game, each in a random line.
-Prices shift with group size so the last trader can always be offered $48: a group of 5
-starts at $3, a group of 4 at $6, a group of 3 at $12. A purchase doubles the price for the
-next trader; a refusal passes the asset on at the same price.
+At the start of the session, participants are split into groups of 3 to 5 that are as equal in
+size as possible (6 -> 3+3, 7 -> 3+4, 9 -> 4+5, 10 -> 5+5, 13 -> 4+4+5), and they stay in the
+same group for every game, with a new random place in line each game.
+Prices shift with group size so the last trader can always be offered $36: a group of 5 starts
+at $2.25, a group of 4 at $4.50, a group of 3 at $9. A purchase doubles the price for the next
+trader; a refusal passes the asset on at the same price.
 Not buying pays $2, reselling pays the next buyer's price minus yours, and being stuck pays $0.
 Everyone also gets a $3 show-up fee (participation_fee in settings.py), paid on top of the paid game.
-The smallest resale profit ($3) beats sitting out ($2), so a purchase that is resold always pays more.
+The smallest resale profit ($2.25) beats sitting out ($2), so a purchase that is resold always pays more.
 Round 1 is an unpaid practice game; rounds 2-6 are part 1 and rounds 7-11 are part 2.
 Each participant sees one interface per part (plain, hedonic, or directive), and every
 participant switches interface between parts (six treatment groups).
@@ -26,7 +27,7 @@ class C(BaseConstants):
     NUM_ROUNDS = PRACTICE_ROUNDS + 2 * GAMES_PER_PART
 
     MULTIPLE = 2
-    PRICES = [3, 6, 12, 24, 48]  # a group of n uses the top n prices
+    PRICES = [2.25, 4.5, 9, 18, 36]  # a group of n uses the top n prices
     EARN_NOACTION = cu(2)
     EARN_STUCK = cu(0)
 
@@ -38,9 +39,10 @@ class C(BaseConstants):
     XP_PER_BUY = 10
     XP_PER_LEVEL = 100
     HOT_STREAK = 3
+    # $18 and $36 are offered in every group size
     BADGES = [
-        dict(key='bold', icon='💪', name='Bold Move', desc='Buy at $24 or more'),
-        dict(key='roller', icon='💎', name='High Roller', desc='Buy at $48'),
+        dict(key='bold', icon='💪', name='Bold Move', desc='Buy at $18 or more'),
+        dict(key='roller', icon='💎', name='High Roller', desc='Buy at $36'),
         dict(key='hot', icon='🔥', name='Hot Hand', desc='Buy in 3 games in a row'),
         dict(key='allin', icon='🚀', name='All In', desc='Buy at every price in a game'),
     ]
@@ -57,26 +59,26 @@ class Group(BaseGroup):
     pass
 
 
+def money(x):
+    """$9, $18, but $2.25 and $4.50."""
+    x = float(x)
+    return f'${int(x)}' if x == int(x) else f'${x:,.2f}'
+
+
 def buy_field(price):
     return models.BooleanField(
-        label=f'${price}', choices=[[True, 'Buy'], [False, "Don't buy"]],
+        label=money(price), choices=[[True, 'Buy'], [False, "Don't buy"]],
         widget=widgets.RadioSelectHorizontal,
     )
 
 
-def cq_field(label, choices):
-    return models.IntegerField(
-        label=label, choices=list(enumerate(choices)), widget=widgets.RadioSelect
-    )
-
-
 class Player(BasePlayer):
-    # decisions: buy_k is the choice at PRICES[k]
-    buy_0 = buy_field(3)
-    buy_1 = buy_field(6)
-    buy_2 = buy_field(12)
-    buy_3 = buy_field(24)
-    buy_4 = buy_field(48)
+    # decisions: buy_k is the choice at PRICES[k]; prices the group can't reach stay blank
+    buy_0 = buy_field(2.25)
+    buy_1 = buy_field(4.5)
+    buy_2 = buy_field(9)
+    buy_3 = buy_field(18)
+    buy_4 = buy_field(36)
     timed_out = models.BooleanField(initial=False)
 
     # treatment info, copied into every round for the data export
@@ -86,38 +88,34 @@ class Player(BasePlayer):
     prices_desc = models.BooleanField()
 
     # outcome
+    group_size = models.IntegerField()
     position = models.IntegerField()
-    offered_price = models.IntegerField()
+    offered_price = models.CurrencyField()
     bought = models.BooleanField()
-    resold_at = models.IntegerField()
+    resold_at = models.CurrencyField()
     outcome = models.StringField()
     earn = models.CurrencyField()
     is_paid_round = models.BooleanField(initial=False)
-    group_size = models.IntegerField()
 
     # directive interface
     xp_gained = models.IntegerField(initial=0)
     new_badges = models.StringField(initial='')
 
-    # comprehension check (round 1 only)
-    cq1 = cq_field('If you are offered the asset at the lowest price in your game, what is your position in line?',
-                   ['First', 'Second', 'Third', 'I cannot be sure'])
-    cq2 = cq_field('The trader before you is offered the asset at $12 and does not buy. At what price is it offered to you?',
-                   ['$6', '$12', '$24', 'It is not offered to you'])
-    cq3 = cq_field('If you are offered the asset at $48, what is your position in line?',
-                   ['First', 'Second', 'Last in line', 'I cannot be sure'])
-    cq4 = cq_field('You buy the asset at $12 and the next trader buys it from you at $24. What do you earn in that game?',
-                   ['$0', '$2', '$12', '$24'])
-    cq5 = cq_field('You decide not to buy the asset. What do you earn in that game?',
-                   ['$0', '$2', '$3', 'It depends on the price'])
-    cq6 = cq_field('When will you learn what happened in each game?',
-                   ['Right after each game', 'At the end of the session'])
-    cq_attempts = models.IntegerField(initial=0)
+    # comprehension check (round 1 only). Answers are option numbers on the participant's
+    # screen; the questions depend on their group size, see comprehension_questions().
+    cq1 = models.IntegerField(min=0, max=9)
+    cq2 = models.IntegerField(min=0, max=9)
+    cq3 = models.IntegerField(min=0, max=9)
+    cq4 = models.IntegerField(min=0, max=9)
+    cq5 = models.IntegerField(min=0, max=9)
+    cq6 = models.IntegerField(min=0, max=9)
+    cq_correct = models.IntegerField()
     # True if the experimenter skipped this participant past the check (Advance slowest participants)
     cq_skipped = models.BooleanField(initial=False)
 
 
-CQ_ANSWERS = dict(cq1=3, cq2=1, cq3=2, cq4=2, cq5=1, cq6=0)
+CQ_FIELDS = ['cq1', 'cq2', 'cq3', 'cq4', 'cq5', 'cq6']
+POSITIONS = ['First', 'Second', 'Third', 'Fourth', 'Fifth']
 
 
 # ---------------- helpers ----------------
@@ -158,6 +156,40 @@ def shown_fields(player):
     return [f'buy_{i}' for i in range(len(C.PRICES) - player.group_size, len(C.PRICES))]
 
 
+def comprehension_questions(size):
+    """The six questions for a group of `size`, with answers and explanations."""
+    lad = ladder(size)
+    low, top = money(lad[0]), money(lad[-1])
+    buy, sell = lad[1], lad[2]
+    positions = POSITIONS[:size]
+    last = POSITIONS[size - 1].lower()
+    return [
+        dict(name='cq1', text=f'If you are offered the asset at {low}, what is your position in line?',
+             options=positions + ['I cannot be sure'], answer=size,
+             explain=f'I cannot be sure. The price only doubles when someone buys, so if no one ahead of you has bought, '
+                     f'the asset is still {low} and you could be anywhere from first to {last}.'),
+        dict(name='cq2', text='The trader before you is offered the asset at $9 and does not buy. At what price is it offered to you?',
+             options=['$4.50', '$9', '$18', 'It is not offered to you'], answer=1,
+             explain='$9. The price only doubles when a trader buys, so if the trader before you does not buy, '
+                     'you are offered the same price they were.'),
+        dict(name='cq3', text=f'If you are offered the asset at {top}, what is your position in line?',
+             options=positions + ['I cannot be sure'], answer=size - 1,
+             explain=f'{POSITIONS[size - 1]}, last in line. The price reaches {top} only after {size - 1} traders have bought, '
+                     f'so {size - 1} people are ahead of you and no one is left to buy from you.'),
+        dict(name='cq4', text=f'You buy the asset at {money(buy)} and the next trader buys it from you at {money(sell)}. '
+                              f'What do you earn in that game?',
+             options=['$0', '$2', money(sell - buy), money(sell)], answer=2,
+             explain=f'{money(sell - buy)}. You earn the later trader\'s price minus your price, '
+                     f'and {money(sell)} minus {money(buy)} is {money(sell - buy)}.'),
+        dict(name='cq5', text='You decide not to buy the asset. What do you earn in that game?',
+             options=['$0', '$2', '$3', 'It depends on the price'], answer=1,
+             explain='$2. Not buying always pays a sure $2, no matter what anyone else does.'),
+        dict(name='cq6', text='When will you learn what happened in each game?',
+             options=['Right after each game', 'At the end of the session'], answer=0,
+             explain='Right after each game. Your screen shows the result of each game as soon as that game ends.'),
+    ]
+
+
 def xp_info(participant):
     xp = participant.xp
     return dict(level=xp // C.XP_PER_LEVEL + 1, into=xp % C.XP_PER_LEVEL, xp=xp)
@@ -189,17 +221,20 @@ def creating_session(subsession: Subsession):
             p.xp, p.badges, p.streak = 0, '', 0
             p.games = []
             p.finlit_score = None
+        # Random groups, as equal in size as possible, kept for the whole session
+        players = subsession.get_players()
+        random.shuffle(players)
+        sizes = group_sizes(n)
+        random.shuffle(sizes)
+        matrix, start = [], 0
+        for size in sizes:
+            matrix.append(players[start:start + size])
+            start += size
+        subsession.set_group_matrix(matrix)
+    else:
+        subsession.group_like_round(1)
 
-    # New random groups (as equal in size as possible) and a new random line every game
-    players = subsession.get_players()
-    random.shuffle(players)
-    sizes = group_sizes(len(players))
-    random.shuffle(sizes)
-    matrix, start = [], 0
-    for size in sizes:
-        matrix.append(players[start:start + size])
-        start += size
-    subsession.set_group_matrix(matrix)
+    # A new random place in line every game
     part = part_of(subsession.round_number)
     for g in subsession.get_groups():
         members = g.get_players()
@@ -228,7 +263,7 @@ def set_outcomes(group: Group):
         if not p.bought:
             p.outcome, p.earn = 'Did not buy', C.EARN_NOACTION
         elif nxt:
-            p.outcome, p.earn, p.resold_at = 'Bought and resold', cu(nxt.offered_price - p.offered_price), nxt.offered_price
+            p.outcome, p.earn, p.resold_at = 'Bought and resold', nxt.offered_price - p.offered_price, nxt.offered_price
         elif p.position == p.group_size:
             p.outcome, p.earn = 'Bought, last in line', C.EARN_STUCK
         else:
@@ -238,17 +273,17 @@ def set_outcomes(group: Group):
         if p.part > 0:
             p.participant.games = p.participant.games + [dict(
                 part=p.part, game=game_in_part(p.round_number), round=p.round_number,
-                position=p.position, size=p.group_size, offered=p.offered_price, outcome=p.outcome,
-                earn=int(p.earn), interface=p.interface,
+                position=p.position, size=p.group_size, offered=float(p.offered_price),
+                outcome=p.outcome, earn=float(p.earn), interface=p.interface,
             )]
 
 
 def result_message(p: Player):
-    price = f'${p.offered_price}'
+    price = money(p.offered_price)
     if p.outcome == 'Did not buy':
         return f'You were offered the asset at {price} and did not buy.'
     if p.outcome == 'Bought and resold':
-        return f'You bought the asset at {price} and a later trader bought it from you at ${p.resold_at}.'
+        return f'You bought the asset at {price} and a later trader bought it from you at {money(p.resold_at)}.'
     if p.outcome == 'Bought, last in line':
         return f'You bought the asset at {price}, but you were last in line, so no one could buy it from you.'
     return f'You bought the asset at {price}, but no one after you bought it.'
@@ -262,40 +297,43 @@ class Instructions(Page):
 
     @staticmethod
     def vars_for_template(player: Player):
-        rows = [dict(buy=p, sell=p * C.MULTIPLE, earn=p * C.MULTIPLE - p) for p in C.PRICES[:-1]]
-        sizes = player.session.group_sizes
-        starts = [dict(size=s, start=ladder(s)[0]) for s in sorted(sizes, reverse=True)]
+        lad = ladder(player.group_size)
+        fee = player.session.config['participation_fee']
+        rows = [dict(buy=money(p), sell=money(p * C.MULTIPLE), earn=money(p * C.MULTIPLE - p)) for p in lad[:-1]]
         names = {3: 'three', 4: 'four', 5: 'five'}
-        size_text = ' or '.join(names[s] for s in sizes)
-        return dict(resale_rows=rows, last_price=C.PRICES[-1], fee=player.session.participation_fee,
-                    starts=starts, size_text=size_text, one_size=len(sizes) == 1)
+        return dict(
+            resale_rows=rows, last_price=money(lad[-1]), start=money(lad[0]),
+            prices=', '.join(money(p) for p in lad[:-1]) + ', and ' + money(lad[-1]),
+            size_word=names[player.group_size], last_word=POSITIONS[player.group_size - 1].lower(),
+            fee=money(fee), sit_out=money(C.EARN_NOACTION),
+            max_earn=money(lad[-2]), max_total=money(lad[-2] + fee), n_games=2 * C.GAMES_PER_PART,
+        )
 
 
 class Comprehension(Page):
     form_model = 'player'
-    form_fields = list(CQ_ANSWERS)
+    form_fields = CQ_FIELDS
 
     @staticmethod
     def is_displayed(player: Player):
         return player.round_number == 1
 
     @staticmethod
-    def error_message(player: Player, values):
-        player.cq_attempts += 1
-        wrong = {k: 'Not quite. Please review the rules and try again.'
-                 for k, a in CQ_ANSWERS.items() if values[k] != a}
-        return wrong or None
+    def vars_for_template(player: Player):
+        qs = comprehension_questions(player.group_size)
+        return dict(questions=[dict(q, last=i == len(qs) - 1) for i, q in enumerate(qs)], n=len(qs))
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
-        # A forced advance fills unanswered fields with 0, which would look like real answers.
-        # Record them as missing instead. oTree also runs error_message once on that empty
-        # submission, so undo the attempt it counted.
         if timeout_happened:
-            for k in CQ_ANSWERS:
+            # A forced advance fills unanswered fields with 0, which would look like real
+            # answers. Record them as missing instead.
+            for k in CQ_FIELDS:
                 setattr(player, k, None)
             player.cq_skipped = True
-            player.cq_attempts = max(0, player.cq_attempts - 1)
+            return
+        qs = comprehension_questions(player.group_size)
+        player.cq_correct = sum(getattr(player, q['name']) == q['answer'] for q in qs)
 
 
 class PartIntro(Page):
@@ -319,7 +357,7 @@ class Decision(Page):
 
     @staticmethod
     def get_form_fields(player: Player):
-        # only the prices that can be offered in this game's group
+        # only the prices that can be offered in this group
         return shown_fields(player)
 
     @staticmethod
@@ -333,9 +371,9 @@ class Decision(Page):
         fields = shown_fields(player)
         if player.prices_desc:
             fields = fields[::-1]
-        rows = [dict(field=f, price=C.PRICES[int(f[-1])]) for f in fields]
+        rows = [dict(field=f, price=money(C.PRICES[int(f[-1])])) for f in fields]
         return dict(rows=rows, game=game_in_part(player.round_number), xp=xp_info(player.participant),
-                    start=ladder(player.group_size)[0])
+                    sit_out=money(C.EARN_NOACTION))
 
     @staticmethod
     def before_next_page(player: Player, timeout_happened):
@@ -353,7 +391,6 @@ class Decision(Page):
             pt.xp += player.xp_gained
             pt.streak = pt.streak + 1 if buys else 0
             have = pt.badges.split(',') if pt.badges else []
-            # $24 and $48 are offered in every group size
             earned = dict(bold=dec['buy_3'] or dec['buy_4'], roller=dec['buy_4'],
                           hot=pt.streak >= C.HOT_STREAK, allin=buys == len(fields))
             fresh = [b['key'] for b in C.BADGES if earned[b['key']] and b['key'] not in have]
@@ -375,7 +412,7 @@ class Result(Page):
         fresh = player.new_badges.split(',') if player.new_badges else []
         buys = sum(getattr(player, f) for f in shown_fields(player))
         return dict(
-            message=result_message(player), game=game_in_part(player.round_number),
+            message=result_message(player), game=game_in_part(player.round_number), earned=money(player.earn),
             icon=icon, cheer=cheer, buys=buys, n_prices=player.group_size,
             xp=xp_info(player.participant), shelf=badge_shelf(player.participant),
             new_badges=[b for b in C.BADGES if b['key'] in fresh],

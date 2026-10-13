@@ -2,21 +2,23 @@
 {{ block title }}How the game works{{ endblock }}
 {{ block content }}
 <div class="panel">
-  <p>You will play a short trading game many times in groups of {{ size_text }}. All the other traders in your games are real participants in this room. In each game the traders are placed in a random line, and you will not know your place when you decide.</p>
-  <p>An asset is offered to the first trader at a starting price, and then to each trader in turn:</p>
+  <p>You have already earned <strong>{{ fee }}</strong> for showing up today.</p>
+  <p>At the start of the experiment, the computer randomly divided the people in this room into groups, and you stay in the same group for every game. <strong>Your group has {{ size_word }} traders.</strong> All the other traders in your group are real participants in this room.</p>
+  <p>In each game, the traders in your group are placed in a random line, and you will not know your place when you decide. An asset is offered to the first trader for {{ start }}. The asset is worth nothing and never pays anything. The only reason to buy it is the chance to resell it to a trader later in line.</p>
+  <p>The asset is then offered to each trader in turn:</p>
   <ul>
     <li>If a trader <strong>buys</strong>, the asset is offered to the next trader at <strong>twice</strong> the price.</li>
     <li>If a trader <strong>does not buy</strong>, the asset is offered to the next trader at the <strong>same</strong> price.</li>
   </ul>
-  <p>Every trader is offered the asset once. <strong>The asset itself pays nothing.</strong> Its only value is the chance to resell it to a trader later in line.</p>
+  <p>Every trader is offered the asset exactly once, so the only possible prices are {{ prices }}. A price of {{ start }} could mean you are anywhere in line.</p>
 </div>
 
 <h4>What you can earn in each game</h4>
 <div class="panel">
   <table class="rules-table">
-    <tr><td>You do not buy</td><td class="num">{{ C.EARN_NOACTION }}</td></tr>
-    <tr><td>You buy and a later trader buys it from you</td><td class="num">Their price minus your price</td></tr>
-    <tr><td>You buy and no one after you buys, or you are last in line</td><td class="num">{{ C.EARN_STUCK }}</td></tr>
+    <tr><td>You do not buy</td><td class="num">{{ sit_out }}</td></tr>
+    <tr><td>You buy, and a later trader buys it from you</td><td class="num">Their price minus your price</td></tr>
+    <tr><td>You buy, and no one after you buys, or you are {{ last_word }}</td><td class="num">$0</td></tr>
   </table>
   <p class="muted">You never pay the price out of your own money.</p>
 </div>
@@ -24,34 +26,20 @@
 <h4>What reselling pays at each price</h4>
 <div class="panel">
   <table class="rules-table">
-    <tr><th>You buy at</th><th class="num">Next trader buys at</th><th class="num">You earn</th></tr>
+    <tr><th>You buy at</th><th class="num">A later trader buys at</th><th class="num">You earn</th></tr>
     {{ for r in resale_rows }}
-    <tr><td>${{ r.buy }}</td><td class="num">${{ r.sell }}</td><td class="num">${{ r.earn }}</td></tr>
+    <tr><td>{{ r.buy }}</td><td class="num">{{ r.sell }}</td><td class="num">{{ r.earn }}</td></tr>
     {{ endfor }}
-    <tr><td>${{ last_price }}</td><td class="num">No one can buy after you</td><td class="num">{{ C.EARN_STUCK }}</td></tr>
+    <tr><td>{{ last_price }}</td><td class="num">No one can buy after you</td><td class="num">$0</td></tr>
   </table>
-</div>
-
-<h4>Your position in line</h4>
-<div class="panel">
-  {{ if one_size }}
-  <p>The first trader is always offered the asset at ${{ starts.0.start }}, so the last trader in line can be offered at most ${{ last_price }}.</p>
-  {{ else }}
-  <p>Groups are re-drawn every game, so some games have more traders than others. The starting price depends on how many traders are in the game, so the last trader in line can always be offered at most ${{ last_price }}. The decision screen tells you how many traders are in each game.</p>
-  <table class="rules-table">
-    <tr><th>Traders in the game</th><th class="num">First trader is offered</th></tr>
-    {{ for s in starts }}<tr><td>{{ s.size }}</td><td class="num">${{ s.start }}</td></tr>{{ endfor }}
-  </table>
-  {{ endif }}
-  <p>Because a refused asset is passed on at the same price, the price you are offered usually does not tell you your position, so you usually cannot be sure anyone will buy after you.</p>
 </div>
 
 <h4>Deciding and getting paid</h4>
 <div class="panel">
-  <p>In each game you say whether you would buy at every price you could be offered. Only your decision at the price you are actually offered counts.</p>
-  <p>You will play one unpaid practice game, then two parts of {{ C.GAMES_PER_PART }} games each. You are placed in a new random group and a new place in line in every game. Right after each game you will see what happened and how much you earned in that game.</p>
-  <p>One of the {{ C.GAMES_PER_PART }}&nbsp;×&nbsp;2 paid games was chosen at random for this session. Everyone in the room is paid for that same game, and it is revealed at the end. Since any game could be the one that counts, treat each one as if it determines your payment.</p>
-  <p>You also receive a <strong>{{ fee }} show-up fee</strong> for coming, paid on top of your earnings from that game.</p>
+  <p>Before learning your place in line, you choose Buy or Don't buy at each price you could be offered. Only your choice at the price you are offered counts.</p>
+  <p>You will first play one practice game, which is not paid. You will then play two parts of {{ C.GAMES_PER_PART }} games each, {{ n_games }} games in total. In every game, you get a new random place in line within your group. Right after each game, your screen shows your place in line, whether you bought the asset, and how much you earned in that game.</p>
+  <p>Only one of the paid games counts for payment. Every game has the same chance of being chosen, everyone in this room is paid for that same game, and you will find out which game it is at the end of the session. Since any game could be the one that counts, treat each one as if it determines your payment.</p>
+  <p>You get {{ fee }} for coming, plus between $0 and {{ max_earn }} from the game that counts, so you will be paid between {{ fee }} and {{ max_total }} in total.</p>
 </div>
 
 {{ next_button }}

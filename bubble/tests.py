@@ -1,6 +1,10 @@
-from otree.api import Bot, Submission, SubmissionMustFail, expect
+from otree.api import Bot, Submission, expect
 from . import *
 import random
+
+
+def p_group_ids(player):
+    return sorted(q.participant.id_in_session for q in player.group.get_players())
 
 
 class PlayerBot(Bot):
@@ -8,9 +12,14 @@ class PlayerBot(Bot):
         r = self.round_number
         if r == 1:
             yield Instructions
-            # one wrong answer must be rejected before the correct set goes through
-            yield SubmissionMustFail(Comprehension, dict(CQ_ANSWERS, cq1=0))
-            yield Comprehension, CQ_ANSWERS
+            # answers are recorded whether right or wrong; this bot gets the first one wrong
+            qs = comprehension_questions(self.player.group_size)
+            answers = {q['name']: q['answer'] for q in qs}
+            answers['cq1'] = 0
+            yield Comprehension, answers
+            expect(self.player.cq_correct, len(qs) - 1)
+        # groups are fixed for the session
+        expect(p_group_ids(self.player), p_group_ids(self.player.in_round(1)))
         if game_in_part(r) == 1:
             yield PartIntro
 

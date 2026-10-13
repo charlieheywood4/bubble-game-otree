@@ -1,17 +1,57 @@
 {{ extends 'global/Page.html' }}
 {{ block title }}Check your understanding{{ endblock }}
 {{ block content }}
-<details class="panel">
-  <summary><strong>Review the rules</strong></summary>
-  <ul class="mt-2">
-    <li>The first trader is offered the asset at the starting price for the game: $3 with five traders, $6 with four, $12 with three. The last trader in line can be offered at most $48.</li>
-    <li>If a trader buys, the next trader is offered it at twice the price. If a trader does not buy, the next trader is offered it at the same price.</li>
-    <li>Not buying earns {{ C.EARN_NOACTION }}. Buying and reselling earns the next buyer's price minus yours. Buying without reselling earns {{ C.EARN_STUCK }}.</li>
-    <li>You see what happened right after each game.</li>
-  </ul>
-</details>
-<div class="panel">
-  {{ formfields }}
-</div>
-{{ next_button }}
+<p>Answer each question, then check it. The screen shows the correct answer and an explanation before the next question appears.</p>
+{{ for q in questions }}
+<fieldset class="panel cq-step" data-answer="{{ q.answer }}" {{ if forloop.counter0 }}hidden{{ endif }}>
+  <p class="muted">Question {{ forloop.counter }} of {{ n }}</p>
+  <legend class="cq-q">{{ q.text }}</legend>
+  {{ for o in q.options }}
+  <label class="cq-opt"><input type="radio" name="{{ q.name }}" value="{{ forloop.counter0 }}" required> {{ o }}</label>
+  {{ endfor }}
+  <div class="cq-feedback" role="status" hidden>
+    <p class="cq-verdict"></p>
+    <p>{{ q.explain }}</p>
+  </div>
+  <button type="button" class="btn btn-primary cq-check" disabled>Check answer</button>
+  {{ if q.last }}
+  <span class="cq-done" hidden>{{ next_button }}</span>
+  {{ else }}
+  <button type="button" class="btn btn-primary cq-next" hidden>Next question</button>
+  {{ endif }}
+</fieldset>
+{{ endfor }}
+{{ endblock }}
+{{ block scripts }}
+<script>
+(function () {
+  var steps = Array.prototype.slice.call(document.querySelectorAll('.cq-step'));
+  steps.forEach(function (step, i) {
+    var radios = step.querySelectorAll('input[type=radio]');
+    var check = step.querySelector('.cq-check');
+    radios.forEach(function (r) { r.addEventListener('change', function () { check.disabled = false; }); });
+    check.addEventListener('click', function () {
+      var chosen = step.querySelector('input[type=radio]:checked');
+      if (!chosen) return;
+      // lock the first answer: disable the other options (the chosen one still submits)
+      radios.forEach(function (r) { if (r !== chosen) r.disabled = true; });
+      var ok = +chosen.value === +step.dataset.answer;
+      var fb = step.querySelector('.cq-feedback');
+      fb.querySelector('.cq-verdict').textContent = ok ? 'Correct.' : 'Not quite. The correct answer is:';
+      fb.classList.toggle('ok', ok); fb.classList.toggle('no', !ok);
+      fb.hidden = false; check.hidden = true;
+      var next = step.querySelector('.cq-next'), done = step.querySelector('.cq-done');
+      if (next) { next.hidden = false; next.focus(); }
+      if (done) { done.hidden = false; var b = done.querySelector('button'); if (b) b.focus(); }
+    });
+    var next = step.querySelector('.cq-next');
+    if (next) next.addEventListener('click', function () {
+      steps[i + 1].hidden = false;
+      next.hidden = true;
+      steps[i + 1].querySelector('legend').scrollIntoView({ block: 'start' });
+      steps[i + 1].querySelector('input').focus();
+    });
+  });
+})();
+</script>
 {{ endblock }}

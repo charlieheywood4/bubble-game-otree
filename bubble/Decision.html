@@ -5,7 +5,6 @@
   {{ if player.interface == 'directive' }}
   <div class="xp"><span class="lvl">Level {{ xp.level }}</span><div class="track" aria-hidden="true"><div class="fill" style="width:{{ xp.into }}%"></div></div><span class="pts">{{ xp.xp }} XP</span></div>
   {{ endif }}
-  <p class="game-size"><strong>{{ player.group_size }} traders</strong> in this game. The first trader is offered the asset at ${{ start }}.</p>
   <p>For each price, would you buy the asset if it were offered to you at that price?
     {{ if player.prices_desc }}<strong>In this part, prices are listed from highest to lowest.</strong>{{ endif }}</p>
   <table class="decide">
@@ -13,9 +12,9 @@
     <tbody>
     {{ for r in rows }}
       <tr>
-        <td class="price">${{ r.price }}</td>
+        <td class="price">{{ r.price }}</td>
         <td>
-          <div class="seg" role="radiogroup" aria-label="Choice at ${{ r.price }}">
+          <div class="seg" role="radiogroup" aria-label="Choice at {{ r.price }}">
             <label><input type="radio" name="{{ r.field }}" value="True" required><span>Buy</span></label>
             <label><input type="radio" name="{{ r.field }}" value="False"><span>Don't buy</span></label>
           </div>
@@ -25,7 +24,7 @@
     {{ endfor }}
     </tbody>
   </table>
-  <p class="muted mt-3">Buying and reselling earns the next trader's price minus yours, buying without reselling earns {{ C.EARN_STUCK }}, and not buying earns {{ C.EARN_NOACTION }}. Any price left unanswered when time runs out counts as "don't buy."</p>
+  <p class="muted mt-3">Buying and reselling earns the next trader's price minus yours, buying without reselling earns $0, and not buying earns {{ sit_out }}. Any price left unanswered when time runs out counts as "don't buy."</p>
   <button class="otree-btn-next btn btn-primary" id="lock-in" disabled>Lock in my choices</button>
 </div>
 {{ endblock }}
