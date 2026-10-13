@@ -6,7 +6,7 @@
     <p>You will now play one practice game. It is not paid.</p>
   {{ else }}
     <p class="cond-title">Part {{ player.part }} of 2</p>
-    <p>You will now play {{ C.GAMES_PER_PART }} games. The game and the payment rules are exactly the same as before. You will be placed in a new random group in every game.</p>
+    <p>You will now play {{ C.GAMES_PER_PART }} games. The game and the payment rules are exactly the same as before. You stay in the same group, with a new random place in line in every game.</p>
     {{ if player.interface == 'hedonic' }}
       <p>In this part, the screens will include colors and animations. <strong>These do not affect your earnings.</strong> There is no right or wrong strategy.</p>
     {{ elif player.interface == 'directive' }}
