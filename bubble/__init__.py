@@ -5,7 +5,9 @@ doc = """
 Bubble Game (Moinas and Pouget 2013), adapted from Huber (github.com/chr-huber/bg).
 Groups of 5 in a random line. The first trader is offered the asset at $3. A purchase
 doubles the price for the next trader; a refusal passes the asset on at the same price.
-Not buying pays $5, reselling pays the next buyer's price minus yours, and being stuck pays $0.
+Not buying pays $2, reselling pays the next buyer's price minus yours, and being stuck pays $0.
+Everyone also gets a $3 show-up fee (participation_fee in settings.py), paid on top of the paid game.
+The smallest resale profit ($3) beats sitting out ($2), so a purchase that is resold always pays more.
 Round 1 is an unpaid practice game; rounds 2-6 are part 1 and rounds 7-11 are part 2.
 Each participant sees one interface per part (plain, hedonic, or directive), and every
 participant switches interface between parts (six treatment groups).
@@ -22,7 +24,7 @@ class C(BaseConstants):
     START_PRICE = 3
     MULTIPLE = 2
     PRICES = [3, 6, 12, 24, 48]
-    EARN_NOACTION = cu(5)
+    EARN_NOACTION = cu(2)
     EARN_STUCK = cu(0)
 
     # Six treatment groups: every ordered pair of two different interfaces
@@ -101,9 +103,9 @@ class Player(BasePlayer):
     cq3 = cq_field('If you are offered the asset at $48, what is your position in line?',
                    ['First', 'Third', 'Fifth (last)', 'I cannot be sure'])
     cq4 = cq_field('You buy the asset at $6 and the next trader buys it from you at $12. What do you earn in that game?',
-                   ['$0', '$5', '$6', '$12'])
+                   ['$0', '$2', '$6', '$12'])
     cq5 = cq_field('You decide not to buy the asset. What do you earn in that game?',
-                   ['$0', '$3', '$5', 'It depends on the price'])
+                   ['$0', '$2', '$3', 'It depends on the price'])
     cq6 = cq_field('When will you learn what happened in each game?',
                    ['Right after each game', 'At the end of the session'])
     cq_attempts = models.IntegerField(initial=0)
@@ -111,7 +113,7 @@ class Player(BasePlayer):
     cq_skipped = models.BooleanField(initial=False)
 
 
-CQ_ANSWERS = dict(cq1=3, cq2=1, cq3=2, cq4=2, cq5=2, cq6=0)
+CQ_ANSWERS = dict(cq1=3, cq2=1, cq3=2, cq4=2, cq5=1, cq6=0)
 
 
 # ---------------- helpers ----------------
@@ -230,7 +232,7 @@ class Instructions(Page):
     @staticmethod
     def vars_for_template(player: Player):
         rows = [dict(buy=p, sell=p * C.MULTIPLE, earn=p * C.MULTIPLE - p) for p in C.PRICES[:-1]]
-        return dict(resale_rows=rows, last_price=C.PRICES[-1])
+        return dict(resale_rows=rows, last_price=C.PRICES[-1], fee=player.session.participation_fee)
 
 
 class Comprehension(Page):

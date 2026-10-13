@@ -70,8 +70,10 @@ Before the next session starts, go to **Rooms → econ_lab** and close the room'
   rejects any other. **Payments** in the admin lists the cash owed by station number.
 - The last screen shows the station number and the amount in large type. Call participants
   to the front one at a time by station number and pay the envelope labeled with that number.
-- Payments are whole dollars from $0 to $24 ($3, $5, $6, $12, or $24). The most a full group
-  of 5 can cost is $45, so 30 participants cost at most $270. Bring mostly $1 and $5 bills.
+- Everyone gets a $3 show-up fee plus their earnings from the paid game ($0, $2, $3, $6, $12,
+  or $24), so payments are $3, $5, $6, $9, $15, or $27. The most a full group of 5 can cost is
+  $60 (all five buy: $3 + $6 + $12 + $24 + $0 = $45, plus 5 × $3 in fees), so 30 participants
+  cost at most $360. Bring mostly $1 and $5 bills.
 
 For lab sessions, deploy to oTree Hub (https://www.otreehub.com) or Heroku, set
 `OTREE_ADMIN_PASSWORD`, `OTREE_SECRET_KEY` (any long random string), `OTREE_PRODUCTION=1`, and

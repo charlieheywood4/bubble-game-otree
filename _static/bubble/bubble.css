@@ -74,6 +74,7 @@ body { color:var(--ink); font-size:1.05rem; }
 .chip.won { background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:700; }
 .cash-card { border:2px solid var(--accent); border-radius:12px; padding:1rem 1.2rem; margin:1rem 0 1.4rem; text-align:center; }
 .cash-card .seat { font-weight:700; color:var(--muted); margin:0; text-transform:uppercase; letter-spacing:.06em; font-size:.85rem; }
+.cash-card .breakdown { color:var(--muted); font-variant-numeric:tabular-nums; margin:0 0 .5rem; }
 .cash-card .amount { font-size:3rem; font-weight:800; margin:.1rem 0 .3rem; font-variant-numeric:tabular-nums; }
 .paid-row { background:var(--soft); font-weight:600; }
 

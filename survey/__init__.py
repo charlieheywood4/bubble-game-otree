@@ -75,7 +75,8 @@ class PaymentReveal(Page):
         games = player.participant.games
         paid_round = player.session.paid_round
         paid = next(g for g in games if g['round'] == paid_round)
-        return dict(games=games, paid=paid, n=len(games), total=player.participant.payoff_plus_participation_fee())
+        return dict(games=games, paid=paid, n=len(games), earned=player.participant.payoff,
+                    fee=player.session.participation_fee, total=player.participant.payoff_plus_participation_fee())
 
     @staticmethod
     def js_vars(player: Player):

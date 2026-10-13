@@ -23,7 +23,9 @@ SESSION_CONFIGS = [
 ]
 
 SESSION_CONFIG_DEFAULTS = dict(
-    real_world_currency_per_point=1.00, participation_fee=0.00, doc=""
+    real_world_currency_per_point=1.00,
+    # show-up fee in dollars, paid to everyone on top of the paid game
+    participation_fee=3.00, doc=""
 )
 
 PARTICIPANT_FIELDS = [
