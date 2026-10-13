@@ -4,7 +4,7 @@
 <details class="panel">
   <summary><strong>Review the rules</strong></summary>
   <ul class="mt-2">
-    <li>The first trader is offered the asset at ${{ C.START_PRICE }}.</li>
+    <li>The first trader is offered the asset at the starting price for the game: $3 with five traders, $6 with four, $12 with three. The last trader in line can be offered at most $48.</li>
     <li>If a trader buys, the next trader is offered it at twice the price. If a trader does not buy, the next trader is offered it at the same price.</li>
     <li>Not buying earns {{ C.EARN_NOACTION }}. Buying and reselling earns the next buyer's price minus yours. Buying without reselling earns {{ C.EARN_STUCK }}.</li>
     <li>You see what happened right after each game.</li>

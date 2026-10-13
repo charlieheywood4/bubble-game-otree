@@ -2,8 +2,8 @@
 {{ block title }}How the game works{{ endblock }}
 {{ block content }}
 <div class="panel">
-  <p>You will play a short trading game many times in groups of five. All the other traders in your games are real participants in this room. In each game the five traders are placed in a random line, and you will not know your place when you decide.</p>
-  <p>An asset is offered to the first trader for ${{ C.START_PRICE }}, and then to each trader in turn:</p>
+  <p>You will play a short trading game many times in groups of {{ size_text }}. All the other traders in your games are real participants in this room. In each game the traders are placed in a random line, and you will not know your place when you decide.</p>
+  <p>An asset is offered to the first trader at a starting price, and then to each trader in turn:</p>
   <ul>
     <li>If a trader <strong>buys</strong>, the asset is offered to the next trader at <strong>twice</strong> the price.</li>
     <li>If a trader <strong>does not buy</strong>, the asset is offered to the next trader at the <strong>same</strong> price.</li>
@@ -34,7 +34,16 @@
 
 <h4>Your position in line</h4>
 <div class="panel">
-  <p>The first trader is always offered the asset at ${{ C.START_PRICE }}. Because a refused asset is passed on at the same price, the price you are offered usually does not tell you your position, so you usually cannot be sure anyone will buy after you.</p>
+  {{ if one_size }}
+  <p>The first trader is always offered the asset at ${{ starts.0.start }}, so the last trader in line can be offered at most ${{ last_price }}.</p>
+  {{ else }}
+  <p>Groups are re-drawn every game, so some games have more traders than others. The starting price depends on how many traders are in the game, so the last trader in line can always be offered at most ${{ last_price }}. The decision screen tells you how many traders are in each game.</p>
+  <table class="rules-table">
+    <tr><th>Traders in the game</th><th class="num">First trader is offered</th></tr>
+    {{ for s in starts }}<tr><td>{{ s.size }}</td><td class="num">${{ s.start }}</td></tr>{{ endfor }}
+  </table>
+  {{ endif }}
+  <p>Because a refused asset is passed on at the same price, the price you are offered usually does not tell you your position, so you usually cannot be sure anyone will buy after you.</p>
 </div>
 
 <h4>Deciding and getting paid</h4>

@@ -1,6 +1,6 @@
 # Bubble Game study (oTree)
 
-oTree version of the Bubble Game experiment: groups of 5, prices $3–$48, plain / hedonic /
+oTree version of the Bubble Game experiment: groups of 3–5, prices up to $48, plain / hedonic /
 directive interfaces in six treatment groups, a financial literacy survey, and one paid game
 per session that is the same for everyone.
 
@@ -25,7 +25,12 @@ a timed-out decision, and the shared paid game.
 
 ## Session settings (Sessions → Create new session → Configure session)
 
-- **Participants:** must be a multiple of 5.
+- **Participants:** any number from 3 up, odd or even. Each game they are split into groups
+  of 3–5 that are as equal in size as possible: 6 → 3+3, 7 → 3+4, 8 → 4+4, 9 → 4+5,
+  10 → 5+5, 13 → 4+4+5. Groups are re-drawn every game.
+- **Prices** shift with group size so the last trader can always be offered $48: groups of 5
+  start at $3, groups of 4 at $6, groups of 3 at $12. Prices a group can't reach are not shown
+  and stay blank in the data. Each round records `group_size`.
 - **paid_game:** 0 draws the paid game at random (default). 1–10 fixes it, for testing only.
 - **rotation_offset:** set to the number of participants already run in earlier sessions,
   so the six groups and price directions keep rotating evenly across sessions.
@@ -37,8 +42,8 @@ Set **rotation_offset** to the total number of participants in all earlier sessi
 six groups stay balanced overall. Three sessions of 10, for example: 0, then 10, then 20.
 With those offsets the 30 participants split exactly 5 per group.
 
-Create each session in the **econ_lab** room with exactly the number of people who showed up,
-rounded down to a multiple of 5. A session waiting for people who never arrive cannot finish.
+Create each session in the **econ_lab** room with exactly the number of people who showed up
+(at least 3). A session waiting for people who never arrive cannot finish.
 Before the next session starts, go to **Rooms → econ_lab** and close the room's current session.
 
 ## When a participant gets stuck or leaves
@@ -71,9 +76,11 @@ Before the next session starts, go to **Rooms → econ_lab** and close the room'
 - The last screen shows the station number and the amount in large type. Call participants
   to the front one at a time by station number and pay the envelope labeled with that number.
 - Everyone gets a $3 show-up fee plus their earnings from the paid game ($0, $2, $3, $6, $12,
-  or $24), so payments are $3, $5, $6, $9, $15, or $27. The most a full group of 5 can cost is
-  $60 (all five buy: $3 + $6 + $12 + $24 + $0 = $45, plus 5 × $3 in fees), so 30 participants
-  cost at most $360. Bring mostly $1 and $5 bills.
+  or $24), so payments are $3, $5, $6, $9, $15, or $27. A group costs the most when everyone
+  in it buys: a group of 5 at most $60 ($45 + $15 in fees, $12 a person), a group of 4 at most
+  $54 ($42 + $12, $13.50 a person), a group of 3 at most $45 ($36 + $9, $15 a person).
+  So 10 people (5+5) cost at most $120, and 7 people (3+4) at most $99. Bring mostly $1 and
+  $5 bills.
 
 For lab sessions, deploy to oTree Hub (https://www.otreehub.com) or Heroku, set
 `OTREE_ADMIN_PASSWORD`, `OTREE_SECRET_KEY` (any long random string), `OTREE_PRODUCTION=1`, and

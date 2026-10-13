@@ -29,6 +29,7 @@ body { color:var(--ink); font-size:1.05rem; }
 .seg label + label span { border-left:1px solid var(--rule); }
 .seg input:checked + span { background:var(--accent); color:var(--accent-ink); font-weight:600; }
 .seg input:focus-visible + span { outline:3px solid var(--accent); outline-offset:-3px; }
+.game-size { background:var(--soft); border-radius:8px; padding:.45rem .7rem; display:inline-block; }
 .tag-xp { font-size:.78rem; font-weight:700; color:var(--d-green); margin-left:.4rem; white-space:nowrap; }
 .progress-dots { display:flex; gap:.35rem; margin:.2rem 0 1rem; }
 .progress-dots span { width:.7rem; height:.7rem; border-radius:50%; background:var(--rule); }
