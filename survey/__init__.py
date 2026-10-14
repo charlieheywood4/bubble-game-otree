@@ -48,6 +48,12 @@ class Player(BasePlayer):
     finlit_skipped = models.BooleanField(initial=False)
 
 
+def money(x):
+    """$9, $18, but $2.25 and $4.50."""
+    x = float(x)
+    return f'${int(x)}' if x == int(x) else f'${x:,.2f}'
+
+
 FL_ANSWERS = dict(fl_interest=0, fl_inflation=2, fl_risk=1, fl_mortgage=0, fl_bonds=1)
 
 
@@ -75,7 +81,10 @@ class PaymentReveal(Page):
         games = player.participant.games
         paid_round = player.session.paid_round
         paid = next(g for g in games if g['round'] == paid_round)
-        return dict(games=games, paid=paid, n=len(games), total=player.participant.payoff_plus_participation_fee())
+        rows = [dict(g, earn_text=money(g['earn']), offered_text=money(g['offered'])) for g in games]
+        fee = player.session.config['participation_fee']
+        return dict(games=rows, paid=paid, n=len(games), earned=money(paid['earn']),
+                    fee=money(fee), total=money(paid['earn'] + fee))
 
     @staticmethod
     def js_vars(player: Player):

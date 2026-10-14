@@ -3,7 +3,7 @@ from os import environ
 SESSION_CONFIGS = [
     dict(
         name='bubble_study',
-        display_name='Bubble Game study (groups of 5)',
+        display_name='Bubble Game study (groups of 3-5)',
         app_sequence=['demographics', 'bubble', 'survey'],
         num_demo_participants=5,
         # 0 = draw the paid game at random when the session is created; 1-10 fixes it
@@ -13,7 +13,8 @@ SESSION_CONFIGS = [
         rotation_offset=0,
         timers=True,
         doc="""
-        Participants must be a multiple of 5.
+        Any number of participants from 3 up: they are split into groups of 3-5
+        that are as equal as possible (7 -> 3+4, 10 -> 5+5), re-drawn every game.
         paid_game: 0 draws the paid game at random (1-10 fixes it for testing).
         rotation_offset: how many participants earlier sessions have already assigned,
         so treatment groups keep rotating evenly across sessions.
@@ -23,7 +24,9 @@ SESSION_CONFIGS = [
 ]
 
 SESSION_CONFIG_DEFAULTS = dict(
-    real_world_currency_per_point=1.00, participation_fee=0.00, doc=""
+    real_world_currency_per_point=1.00,
+    # show-up fee in dollars, paid to everyone on top of the paid game
+    participation_fee=3.00, doc=""
 )
 
 PARTICIPANT_FIELDS = [
@@ -33,7 +36,7 @@ PARTICIPANT_FIELDS = [
     'games',         # list of per-game results, used for the end-of-session reveal
     'finlit_score',
 ]
-SESSION_FIELDS = ['paid_round']
+SESSION_FIELDS = ['paid_round', 'group_sizes']
 
 ROOMS = [
     # Participants type the random station number from their paper slip when they open
@@ -45,7 +48,8 @@ ROOMS = [
 LANGUAGE_CODE = 'en'
 REAL_WORLD_CURRENCY_CODE = 'USD'
 USE_POINTS = False
-REAL_WORLD_CURRENCY_DECIMAL_PLACES = 0
+# prices like $2.25 and $4.50 need cents
+REAL_WORLD_CURRENCY_DECIMAL_PLACES = 2
 
 ADMIN_USERNAME = 'admin'
 ADMIN_PASSWORD = environ.get('OTREE_ADMIN_PASSWORD')

@@ -14,8 +14,8 @@
   {{ endif }}
 
   <div class="outcome">
-    <p>You were trader {{ player.position }} of {{ C.PLAYERS_PER_GROUP }}. {{ message }}</p>
-    <p class="earned">You earned <strong>{{ player.earn }}</strong> in this game{{ if player.part == 0 }} (practice, not paid){{ endif }}.</p>
+    <p>You were trader {{ player.position }} of {{ player.group_size }}. {{ message }}</p>
+    <p class="earned">You earned <strong>{{ earned }}</strong> in this game{{ if player.part == 0 }} (practice, not paid){{ endif }}.</p>
   </div>
   {{ if player.timed_out }}<p class="muted">Time ran out. Unanswered prices were recorded as "don't buy."</p>{{ endif }}
 
