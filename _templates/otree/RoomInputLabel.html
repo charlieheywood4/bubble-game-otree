@@ -1,0 +1,26 @@
+{% extends "otree/Base.html" %}
+
+{% comment %}Overrides oTree's room page so it asks for the code on the participant's slip.{% endcomment %}
+{% block body_main %}
+    <div class="container m-5" style="max-width: 32rem">
+        <h2>Welcome</h2>
+        <form method="get" id="code-form">
+            {% if invalid_label %}
+                <p class="error text-danger">That code was not found. Check the code on your slip and try again, or raise your hand.</p>
+            {% endif %}
+            <label for="participant_label">Type the code on your slip (for example, 1B).</label>
+            <br/>
+            <input type="text" id="participant_label" name="participant_label" class="form-control"
+                   autocomplete="off" autocapitalize="characters" spellcheck="false" autofocus/>
+            <br/>
+            {% next_button %}
+        </form>
+    </div>
+    <script>
+        // codes are stored in capitals; accept "1b" or " 1B " as well
+        document.getElementById('code-form').addEventListener('submit', function () {
+            var f = document.getElementById('participant_label');
+            f.value = f.value.replace(/\s+/g, '').toUpperCase();
+        });
+    </script>
+{% endblock %}
