@@ -1,0 +1,36 @@
+<style>
+  .rep td, .rep th { padding: 4px 10px; border-bottom: 1px solid #ddd; }
+  .rep .warn { color: #b45309; font-weight: 600; }
+  .rep-box { border: 1px solid #ddd; border-radius: 6px; padding: 10px 14px; margin: 10px 0; }
+</style>
+<div class="rep-box">
+  <p><strong>Paid game for this session:</strong> {{ paid }} (participants see it only at the end).</p>
+  {{ if grouping == 'codes' }}
+  <p><strong>Groups:</strong> formed from the codes people typed.</p>
+  {{ elif grouping == 'random' }}
+  <p class="warn">Groups: the codes did not make valid groups of 3–5 (or some people had no code), so the computer formed random groups instead. The game still works; group numbers on slips do not match.</p>
+  {{ elif grouping == 'unknown' }}
+  <p>Groups: this session was created before group tracking was added.</p>
+  {{ else }}
+  <p class="warn">Groups: not formed yet. Waiting for all {{ n }} participants to join and finish the welcome page. If someone is missing, nobody can continue: delete this session and create one for the number present.</p>
+  {{ endif }}
+  {{ if grouping != 'waiting' }}<p>Results below are for the round chosen above (it opens on the last round). Choose the current round to follow along. If anyone is stuck, use the session's <strong>Monitor</strong> tab and <strong>Advance slowest participants</strong>.</p>{{ endif }}
+</div>
+{{ if grouping == 'waiting' }}
+<table class="rep">
+  <tr><th>Code</th><th>Currently on</th></tr>
+  {{ for r in joined }}<tr><td>{{ r.code }}</td><td>{{ r.page }}</td></tr>{{ endfor }}
+</table>
+{{ endif }}
+{{ if grouping != 'waiting' }}{{ for g in groups }}
+<h5>Group {{ g.number }}: {{ g.size }} traders, prices start at {{ g.start }}</h5>
+<table class="rep">
+  <tr><th>Code</th><th>Currently on</th><th>Layout</th><th>Place in line</th><th>Result</th><th>Earned</th></tr>
+  {{ for r in g.rows }}
+  <tr>
+    <td>{{ r.code }}</td><td>{{ r.page }}</td><td>{{ r.interface }}</td><td>{{ r.position }}</td>
+    <td>{{ r.outcome }}{{ if r.timed_out }} <span class="warn">(timed out)</span>{{ endif }}</td><td>{{ r.earn }}</td>
+  </tr>
+  {{ endfor }}
+</table>
+{{ endfor }}{{ endif }}

@@ -245,6 +245,7 @@ def creating_session(subsession: Subsession):
         fixed = session.config.get('paid_game') or 0
         game = fixed if 1 <= fixed <= 2 * C.GAMES_PER_PART else random.randint(1, 2 * C.GAMES_PER_PART)
         session.paid_round = C.PRACTICE_ROUNDS + game
+        session.grouping = 'waiting'
         # Rotate through the six groups; the starting price direction flips every six participants
         offset = session.config.get('rotation_offset') or 0
         for p in session.get_participants():
@@ -309,6 +310,58 @@ def result_message(p: Player):
     if p.outcome == 'Bought, last in line':
         return f'You bought the asset at {price}, but you were last in line, so no one could buy it from you.'
     return f'You bought the asset at {price}, but no one after you bought it.'
+
+
+# ---------------- experimenter dashboard (the session's Report tab) ----------------
+PAGE_NAMES = dict(
+    Demographics='Welcome questions', GroupingWaitPage='Waiting for everyone to join',
+    Instructions='Instructions', Comprehension='Comprehension check', PartIntro='Part intro',
+    Decision='Deciding', ResultsWaitPage='Waiting for group', Result='Viewing result',
+    FinLit='Final questions', PaymentReveal='Payment screen (done)',
+)
+
+
+def page_label(participant):
+    name = participant._current_page_name
+    if not participant._index_in_pages:
+        return 'Not joined yet'
+    label = PAGE_NAMES.get(name, name or '')
+    if participant._current_app_name == 'bubble' and name not in ('GroupingWaitPage', 'Instructions', 'Comprehension'):
+        r = participant._round_number
+        label += ' (practice)' if r == 1 else f' (part {part_of(r)}, game {game_in_part(r)})'
+    return label
+
+
+def vars_for_admin_report(subsession: Subsession):
+    session = subsession.session
+    r = subsession.round_number
+    groups = []
+    for g in subsession.get_groups():
+        members = sorted(g.get_players(), key=lambda p: p.participant.label or '')
+        groups.append(dict(
+            number=g.id_in_subsession, size=len(members), start=money(ladder(len(members))[0]),
+            rows=[dict(
+                code=p.participant.label or f'P{p.participant.id_in_session}',
+                page=page_label(p.participant),
+                interface=p.interface, position=p.position,
+                outcome=p.field_maybe_none('outcome') or '',
+                earn=money(p.earn) if p.field_maybe_none('earn') is not None else '',
+                timed_out=p.timed_out,
+            ) for p in members],
+        ))
+    try:
+        grouping = session.grouping
+    except (AttributeError, KeyError):
+        grouping = 'unknown'  # session created before this field existed
+    paid_round = session.paid_round
+    return dict(
+        groups=groups, round=r, part=part_of(r), game=game_in_part(r),
+        grouping=grouping,
+        paid=f'part {part_of(paid_round)}, game {game_in_part(paid_round)}',
+        n=len(subsession.get_players()),
+        joined=sorted((dict(code=p.participant.label or f'P{p.participant.id_in_session}', page=page_label(p.participant))
+                       for p in subsession.get_players()), key=lambda d: d['code']),
+    )
 
 
 # ---------------- pages ----------------
@@ -434,7 +487,9 @@ class GroupingWaitPage(WaitPage):
     def after_all_players_arrive(subsession: Subsession):
         matrix = label_groups(subsession.get_players())
         if matrix is None:
+            subsession.session.grouping = 'random'
             return  # keep the random groups from creating_session
+        subsession.session.grouping = 'codes'
         for ss in subsession.in_rounds(1, C.NUM_ROUNDS):
             by_participant = {p.participant.id: p for p in ss.get_players()}
             ss.set_group_matrix([[by_participant[p.participant.id] for p in g] for g in matrix])

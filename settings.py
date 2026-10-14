@@ -37,7 +37,7 @@ PARTICIPANT_FIELDS = [
     'games',         # list of per-game results, used for the end-of-session reveal
     'finlit_score',
 ]
-SESSION_FIELDS = ['paid_round', 'group_sizes']
+SESSION_FIELDS = ['paid_round', 'group_sizes', 'grouping']
 
 ROOMS = [
     # Participants type the code from their paper slip (1A-1E or 2A-2E) when they open the
