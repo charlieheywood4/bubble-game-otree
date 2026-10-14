@@ -64,8 +64,10 @@ Before the next session starts, go to **Rooms → econ_lab** and close the room'
   server submits their page when time runs out (every price counts as "don't buy", and
   `timed_out` is recorded), so the group keeps going. For a closed browser this needs the
   production server's **worker** process: on Heroku, **Resources** must show both `web` and
-  `worker` switched on. With the worker off, an open browser still submits at the timer, but a
-  closed one leaves its group waiting.
+  `worker` switched on. With the worker off (the current setup, to save cost), an open browser
+  still submits at the timer, but a closed or frozen one leaves its group waiting: open the
+  session's **Monitor** tab and click **Advance slowest participants**, which records that
+  decision exactly as a timeout would.
 - **Pages without a timer** (welcome, instructions, comprehension check, part intros, results,
   financial literacy): in the session's **Monitor** tab, click **Advance slowest participants**.
   Skipped answers are stored as blank, never as answers the participant did not give, and are
