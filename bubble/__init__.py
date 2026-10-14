@@ -3,9 +3,11 @@ import random
 
 doc = """
 Bubble Game (Moinas and Pouget 2013), adapted from Huber (github.com/chr-huber/bg).
-At the start of the session, participants are split into groups of 3 to 5 that are as equal in
-size as possible (6 -> 3+3, 7 -> 3+4, 9 -> 4+5, 10 -> 5+5, 13 -> 4+4+5), and they stay in the
-same group for every game, with a new random place in line each game.
+Participants join the room with a code such as 1A or 2C; the digit is their group (1 or 2),
+so the experimenter decides the groups by seating. Each group needs 3 to 5 traders. If any code
+lacks a group number or a group would fall outside 3-5, the computer instead splits everyone into
+groups as equal in size as possible (6 -> 3+3, 7 -> 3+4, 9 -> 4+5, 10 -> 5+5). Either way, people
+stay in the same group for every game, with a new random place in line each game.
 Prices shift with group size so the last trader can always be offered $36: a group of 5 starts
 at $2.25, a group of 4 at $4.50, a group of 3 at $9. A purchase doubles the price for the next
 trader; a refusal passes the asset on at the same price.
@@ -147,6 +149,37 @@ def group_sizes(n):
     return [base + 1] * extra + [base] * (k - extra)
 
 
+def label_groups(players):
+    """Groups from room codes such as 1A or 2C, where the digit is the group.
+    Returns None if any code has no group number or a group would fall outside 3-5 traders."""
+    groups = {}
+    for p in players:
+        code = (p.participant.label or '').strip()
+        if len(code) < 2 or not code[0].isdigit():
+            return None
+        groups.setdefault(code[0], []).append(p)
+    if any(not C.MIN_GROUP <= len(g) <= C.MAX_GROUP for g in groups.values()):
+        return None
+    return [groups[k] for k in sorted(groups)]
+
+
+def assign_places(subsession):
+    """A new random place in line every game, plus the per-round treatment fields."""
+    session = subsession.session
+    part = part_of(subsession.round_number)
+    for g in subsession.get_groups():
+        members = g.get_players()
+        positions = random.sample(range(1, len(members) + 1), len(members))
+        for p, pos in zip(members, positions):
+            p.position = pos
+            p.group_size = len(members)
+            p.part = part
+            p.treatment = p.participant.treatment
+            p.interface = interface_of(p.participant, part)
+            p.prices_desc = prices_desc(p.participant, part)
+            p.is_paid_round = subsession.round_number == session.paid_round
+
+
 def ladder(size):
     # the top `size` prices, so the last trader can always be offered the highest price
     return C.PRICES[len(C.PRICES) - size:]
@@ -221,7 +254,8 @@ def creating_session(subsession: Subsession):
             p.xp, p.badges, p.streak = 0, '', 0
             p.games = []
             p.finlit_score = None
-        # Random groups, as equal in size as possible, kept for the whole session
+        # Random groups, as equal in size as possible, kept for the whole session.
+        # GroupingWaitPage replaces them with the groups from the room codes once everyone has joined.
         players = subsession.get_players()
         random.shuffle(players)
         sizes = group_sizes(n)
@@ -234,19 +268,7 @@ def creating_session(subsession: Subsession):
     else:
         subsession.group_like_round(1)
 
-    # A new random place in line every game
-    part = part_of(subsession.round_number)
-    for g in subsession.get_groups():
-        members = g.get_players()
-        positions = random.sample(range(1, len(members) + 1), len(members))
-        for p, pos in zip(members, positions):
-            p.position = pos
-            p.group_size = len(members)
-            p.part = part
-            p.treatment = p.participant.treatment
-            p.interface = interface_of(p.participant, part)
-            p.prices_desc = prices_desc(p.participant, part)
-            p.is_paid_round = subsession.round_number == session.paid_round
+    assign_places(subsession)
 
 
 def set_outcomes(group: Group):
@@ -398,6 +420,28 @@ class Decision(Page):
             player.new_badges = ','.join(fresh)
 
 
+class GroupingWaitPage(WaitPage):
+    """Room codes are only known once people join, so groups are set here, before the instructions."""
+    wait_for_all_groups = True
+    title_text = 'Please wait'
+    body_text = 'Waiting for everyone in the room to finish the opening questions.'
+
+    @staticmethod
+    def is_displayed(player: Player):
+        return player.round_number == 1
+
+    @staticmethod
+    def after_all_players_arrive(subsession: Subsession):
+        matrix = label_groups(subsession.get_players())
+        if matrix is None:
+            return  # keep the random groups from creating_session
+        for ss in subsession.in_rounds(1, C.NUM_ROUNDS):
+            by_participant = {p.participant.id: p for p in ss.get_players()}
+            ss.set_group_matrix([[by_participant[p.participant.id] for p in g] for g in matrix])
+            assign_places(ss)
+        subsession.session.group_sizes = sorted({len(g) for g in matrix})
+
+
 class ResultsWaitPage(WaitPage):
     after_all_players_arrive = set_outcomes
     title_text = 'Please wait'
@@ -424,4 +468,4 @@ class Result(Page):
         return dict(confetti=player.interface == 'hedonic')
 
 
-page_sequence = [Instructions, Comprehension, PartIntro, Decision, ResultsWaitPage, Result]
+page_sequence = [GroupingWaitPage, Instructions, Comprehension, PartIntro, Decision, ResultsWaitPage, Result]

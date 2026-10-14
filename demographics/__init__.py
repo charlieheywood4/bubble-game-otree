@@ -1,9 +1,9 @@
 from otree.api import *
 
 doc = """
-Start of session: confirms the participant's station number (the room label they typed)
+Start of session: confirms the participant's code (the room label they typed, e.g. 1B)
 and asks the two demographic questions in the IRB application, gender and major.
-Answers are stored only with the station number. Major uses broad groups so that
+Answers are stored only with the code. Major uses broad groups so that
 small cells cannot identify anyone; the options match the paper backup form.
 """
 

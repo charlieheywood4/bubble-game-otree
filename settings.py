@@ -13,8 +13,9 @@ SESSION_CONFIGS = [
         rotation_offset=0,
         timers=True,
         doc="""
-        Any number of participants from 3 up: they are split into groups of 3-5
-        that are as equal as possible (7 -> 3+4, 10 -> 5+5), re-drawn every game.
+        3 to 10 participants. Each types a code: 1A-1E puts them in group 1, 2A-2E in group 2.
+        Each group needs 3-5 people (e.g. 9 people: 1A-1E and 2A-2D). Groups stay the same
+        for every game.
         paid_game: 0 draws the paid game at random (1-10 fixes it for testing).
         rotation_offset: how many participants earlier sessions have already assigned,
         so treatment groups keep rotating evenly across sessions.
@@ -39,9 +40,9 @@ PARTICIPANT_FIELDS = [
 SESSION_FIELDS = ['paid_round', 'group_sizes']
 
 ROOMS = [
-    # Participants type the random station number from their paper slip when they open
-    # the room link. Only the 36 numbers in the label file are accepted, and the
-    # Payments page lists cash owed by station number. Names are never entered.
+    # Participants type the code from their paper slip (1A-1E or 2A-2E) when they open the
+    # room link. The digit is their group. Only the 10 codes in the label file are accepted,
+    # and the Payments page lists cash owed by code. Names are never entered.
     dict(name='econ_lab', display_name='Economics lab', participant_label_file='_rooms/econ_lab.txt'),
 ]
 
