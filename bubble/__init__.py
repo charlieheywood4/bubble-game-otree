@@ -107,6 +107,8 @@ class Player(BasePlayer):
     cq6 = cq_field('When will you learn what happened in each game?',
                    ['Right after each game', 'At the end of the session'])
     cq_attempts = models.IntegerField(initial=0)
+    # True if the experimenter skipped this participant past the check (Advance slowest participants)
+    cq_skipped = models.BooleanField(initial=False)
 
 
 CQ_ANSWERS = dict(cq1=3, cq2=1, cq3=2, cq4=2, cq5=2, cq6=0)
@@ -245,6 +247,17 @@ class Comprehension(Page):
         wrong = {k: 'Not quite. Please review the rules and try again.'
                  for k, a in CQ_ANSWERS.items() if values[k] != a}
         return wrong or None
+
+    @staticmethod
+    def before_next_page(player: Player, timeout_happened):
+        # A forced advance fills unanswered fields with 0, which would look like real answers.
+        # Record them as missing instead. oTree also runs error_message once on that empty
+        # submission, so undo the attempt it counted.
+        if timeout_happened:
+            for k in CQ_ANSWERS:
+                setattr(player, k, None)
+            player.cq_skipped = True
+            player.cq_attempts = max(0, player.cq_attempts - 1)
 
 
 class PartIntro(Page):
