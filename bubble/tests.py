@@ -7,6 +7,28 @@ def p_group_ids(player):
     return sorted(q.participant.id_in_session for q in player.group.get_players())
 
 
+def expected_outcomes(players):
+    """Recompute a game from the raw choices, independently of set_outcomes."""
+    line = sorted(players, key=lambda q: q.position)
+    prices = [2.25, 4.5, 9, 18, 36][5 - len(line):]
+    price, offers, buys = prices[0], [], []
+    for q in line:
+        b = bool(getattr(q, 'buy_%d' % [2.25, 4.5, 9, 18, 36].index(price)))
+        offers.append(price)
+        buys.append(b)
+        price = price * 2 if b else price
+    out = {}
+    for k, q in enumerate(line):
+        later = [offers[j] for j in range(k + 1, len(line)) if buys[j]]
+        if not buys[k]:
+            out[q.id] = (offers[k], 'Did not buy', 2)
+        elif later:
+            out[q.id] = (offers[k], 'Bought and resold', later[0] - offers[k])
+        else:
+            out[q.id] = (offers[k], 'Bought, last in line' if k == len(line) - 1 else 'Bought, not resold', 0)
+    return out
+
+
 class PlayerBot(Bot):
     def play_round(self):
         r = self.round_number
@@ -57,5 +79,22 @@ class PlayerBot(Bot):
         members = p.group.get_players()
         expect(sorted(q.position for q in members), list(range(1, len(members) + 1)))
         sizes = [len(g.get_players()) for g in p.subsession.get_groups()]
-        expect(min(sizes) >= C.MIN_GROUP and max(sizes) <= C.MAX_GROUP and max(sizes) - min(sizes) <= 1, True)
-        expect(sorted(sizes), sorted(group_sizes(len(p.subsession.get_players()))))
+        expect(min(sizes) >= C.MIN_GROUP and max(sizes) <= C.MAX_GROUP, True)
+        # groups follow the room codes when they are valid, otherwise the balanced random split
+        codes = label_groups(p.subsession.get_players())
+        if codes:
+            expect(sorted(sorted(q.participant.id_in_session for q in g) for g in codes),
+                   sorted(sorted(q.participant.id_in_session for q in g.get_players()) for g in p.subsession.get_groups()))
+            for q in members:
+                expect(q.participant.label[0], p.participant.label[0])
+        else:
+            expect(sorted(sizes), sorted(group_sizes(len(p.subsession.get_players()))))
+        # every result matches an independent recomputation from the choices
+        offered, outcome, earn = expected_outcomes(members)[p.id]
+        expect(float(p.offered_price), offered)
+        expect(p.outcome, outcome)
+        expect(float(p.earn), earn)
+        # the per-round treatment fields agree with the participant
+        expect(p.group_size, len(members))
+        expect(p.prices_desc, prices_desc(p.participant, p.part))
+        expect(p.is_paid_round, p.round_number == p.session.paid_round)

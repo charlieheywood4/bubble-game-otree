@@ -20,7 +20,8 @@ Open http://localhost:8000, choose **Bubble Game study**, and open the 5 demo li
 .venv/bin/otree test bubble_study 30
 ```
 
-Bots play a full 30-person session and check every payoff rule, the treatment rotation,
+Bots play a full 30-person session three times (with valid group codes, invalid codes, and no
+codes) and check every payoff rule against an independent recomputation, the groups, the treatment rotation,
 a timed-out decision, and the shared paid game.
 
 ## Session settings (Sessions → Create new session → Configure session)
@@ -51,14 +52,20 @@ six groups stay balanced overall. Three sessions of 10, for example: 0, then 10,
 With those offsets the 30 participants split exactly 5 per group.
 
 Create each session in the **econ_lab** room with exactly the number of people who showed up
-(at least 3). A session waiting for people who never arrive cannot finish.
+(at least 3). Groups are formed from the codes once everyone has joined and finished the
+welcome page, so nobody gets past the first wait page until the last person arrives. A session
+waiting for people who never arrive cannot finish: if someone doesn't show, delete the session
+and create a new one for the right number.
 Before the next session starts, go to **Rooms → econ_lab** and close the room's current session.
 
 ## When a participant gets stuck or leaves
 
 - **Decision pages** have a timer. If someone stops responding or closes the browser, the
   server submits their page when time runs out (every price counts as "don't buy", and
-  `timed_out` is recorded), so the group keeps going. This needs the production server.
+  `timed_out` is recorded), so the group keeps going. For a closed browser this needs the
+  production server's **worker** process: on Heroku, **Resources** must show both `web` and
+  `worker` switched on. With the worker off, an open browser still submits at the timer, but a
+  closed one leaves its group waiting.
 - **Pages without a timer** (welcome, instructions, comprehension check, part intros, results,
   financial literacy): in the session's **Monitor** tab, click **Advance slowest participants**.
   Skipped answers are stored as blank, never as answers the participant did not give, and are
@@ -92,4 +99,6 @@ Before the next session starts, go to **Rooms → econ_lab** and close the room'
 
 For lab sessions, deploy to oTree Hub (https://www.otreehub.com) or Heroku, set
 `OTREE_ADMIN_PASSWORD`, `OTREE_SECRET_KEY` (any long random string), `OTREE_PRODUCTION=1`, and
-`OTREE_AUTH_LEVEL=STUDY`, and use the **econ_lab** room.
+`OTREE_AUTH_LEVEL` (`STUDY` if you can; oTree Hub's free public projects only allow `DEMO`,
+which still keeps the data and admin pages behind the password), and use the **econ_lab** room.
+On Heroku, switch on both the `web` and `worker` dynos.
