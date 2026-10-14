@@ -58,6 +58,13 @@ waiting for people who never arrive cannot finish: if someone doesn't show, dele
 and create a new one for the right number.
 Before the next session starts, go to **Rooms → econ_lab** and close the room's current session.
 
+## Watching a session
+
+Open the session's **Report** tab in the admin. It shows the paid game, whether groups were
+formed from the codes (or fell back to random groups), who has joined while everyone is
+arriving, and for each group every trader's current page, layout, place in line, result,
+earnings and timeouts for the round you choose.
+
 ## When a participant gets stuck or leaves
 
 - **Decision pages** have a timer. If someone stops responding or closes the browser, the
