@@ -25,10 +25,13 @@ a timed-out decision, and the shared paid game.
 
 ## Session settings (Sessions → Create new session → Configure session)
 
-- **Participants:** any number from 3 up, odd or even. At the start of the session they are
-  split into groups of 3–5 that are as equal in size as possible (6 → 3+3, 7 → 3+4, 8 → 4+4,
-  9 → 4+5, 10 → 5+5, 13 → 4+4+5) and stay in the same group for every game, with a new
-  random place in line each game. One software version handles every turnout.
+- **Participants and groups:** 3 to 10 people. Each person types a code from their slip:
+  `1A`–`1E` for group 1 and `2A`–`2E` for group 2, so you decide the groups by who gets which
+  slip. Each group needs 3–5 people: 3–5 people use only group 1 codes; 6–10 split across both
+  (e.g. 9 people: 1A–1E and 2A–2D). Groups are set once everyone has finished the welcome
+  page and stay the same for every game, with a new random place in line each game.
+  If a code has no group number or a group would end up outside 3–5, the computer falls back to
+  random groups as equal in size as possible (6 → 3+3, 7 → 3+4, 9 → 4+5, 10 → 5+5).
 - **Prices** shift with group size so the last trader can always be offered $36: groups of 5
   start at $2.25 ($2.25, $4.50, $9, $18, $36), groups of 4 at $4.50, groups of 3 at $9.
   Prices a group can't reach are not shown and stay blank in the data. Each round records
@@ -61,25 +64,24 @@ Before the next session starts, go to **Rooms → econ_lab** and close the room'
   Skipped answers are stored as blank, never as answers the participant did not give, and are
   flagged: `skipped` (demographics), `cq_skipped` (comprehension), `finlit_skipped`
   (financial literacy, with no score).
-- A participant who closed the browser can reopen the room link and type the same station
-  number. They return to the page they were on.
+- A participant who closed the browser can reopen the room link and type the same code. They return to the page they were on.
 
 ## Structure
 
-- `demographics/`: confirms the station number, then asks gender and major (broad groups).
+- `demographics/`: confirms the code, then asks gender and major (broad groups).
 - `bubble/`: instructions, comprehension check, practice (round 1), part 1 (rounds 2–6),
-  part 2 (rounds 7–11). Groups and positions are re-randomized every round.
+  part 2 (rounds 7–11). Groups come from the room codes and stay fixed; places in line are re-randomized every round.
 - `survey/`: financial literacy questions, then the paid-game reveal.
 - Data export: each round records interface, treatment, price direction, choices at every
   price, position, price offered, outcome, and earnings.
 
 ## Paying in cash
 
-- Each participant draws a paper slip with a random station number. When they open the room
-  link, they type that number; `_rooms/econ_lab.txt` lists the 36 valid numbers, and oTree
-  rejects any other. **Payments** in the admin lists the cash owed by station number.
-- The last screen shows the station number and the amount in large type. Call participants
-  to the front one at a time by station number and pay the envelope labeled with that number.
+- Each participant gets a paper slip with a code (`1A`–`1E` or `2A`–`2E`). When they open the
+  room link, they type that code; `_rooms/econ_lab.txt` lists the 10 valid codes, and oTree
+  rejects any other. **Payments** in the admin lists the cash owed by code.
+- The last screen shows the code and the amount in large type. Call participants to the front
+  one at a time by code and pay the envelope labeled with that code.
 - Everyone gets a $3 show-up fee plus their earnings from the paid game ($0, $2, $2.25,
   $4.50, $9, or $18), so payments are $3, $5, $5.25, $7.50, $12, or $21. **Bring quarters**
   as well as $1 and $5 bills.
