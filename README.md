@@ -51,6 +51,12 @@ Set **rotation_offset** to the total number of participants in all earlier sessi
 six groups stay balanced overall. Three sessions of 10, for example: 0, then 10, then 20.
 With those offsets the 30 participants split exactly 5 per group.
 
+**Always create real sessions from Rooms → Economics lab, never from the Sessions page.** A session
+made on the Sessions page is not in the room, so the room link keeps pointing at whatever session the
+room last held, and the session's own session-wide link (`/join/...`) skips the code: each new browser
+takes a seat with no group number. With `require_codes` on (the default), anyone who arrives without a
+code is stopped on a "Please raise your hand" page. Demo sessions are not affected.
+
 Create each session in the **econ_lab** room with exactly the number of people who showed up
 (at least 3). Groups are formed from the codes once everyone has joined and finished the
 welcome page, so nobody gets past the first wait page until the last person arrives. A session

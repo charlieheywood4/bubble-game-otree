@@ -50,6 +50,19 @@ class Player(BasePlayer):
     skipped = models.BooleanField(initial=False)
 
 
+def needs_code(player: Player):
+    """Real sessions must be joined through the room with a slip code. Without one (for example
+    via a session-wide link) a person takes a seat with no group number, so stop them here."""
+    session = player.session
+    return not session.is_demo and session.config.get('require_codes', True) and not player.participant.label
+
+
+class CodeRequired(Page):
+    @staticmethod
+    def is_displayed(player: Player):
+        return needs_code(player)
+
+
 class Demographics(Page):
     form_model = 'player'
     form_fields = ['gender', 'gender_self', 'major']
@@ -68,4 +81,4 @@ class Demographics(Page):
             player.skipped = True
 
 
-page_sequence = [Demographics]
+page_sequence = [CodeRequired, Demographics]

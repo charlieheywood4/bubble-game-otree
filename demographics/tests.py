@@ -1,4 +1,4 @@
-from otree.api import Bot, SubmissionMustFail, expect
+from otree.api import Bot, Submission, SubmissionMustFail, expect
 from . import *
 import random
 
@@ -21,8 +21,14 @@ class PlayerBot(Bot):
     def play_round(self):
         n = len(self.session.get_participants())
         code = test_codes(n, self.case)[self.participant.id_in_session - 1]
+        # bots have no code when they arrive, so in a real (non-demo) session the game first
+        # stops them on the CodeRequired page; the bot then continues as if advanced
+        blocked = needs_code(self.player)
+        expect(blocked, not self.session.is_demo)
         if code:
             self.participant.label = code
+        if blocked:
+            yield Submission(CodeRequired, check_html=False)
         # a description without choosing "Prefer to self-describe" is rejected
         yield SubmissionMustFail(Demographics, dict(gender='Man', gender_self='x', major='Economics'))
         gender = random.choice(C.GENDERS)
