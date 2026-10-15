@@ -12,6 +12,8 @@ SESSION_CONFIGS = [
         # treatment groups and price directions keep rotating across sessions.
         rotation_offset=0,
         timers=True,
+        # Real sessions must be joined through the room with a slip code; turn off only to run without the room
+        require_codes=True,
         doc="""
         3 to 10 participants. Each types a code: 1A-1E puts them in group 1, 2A-2E in group 2.
         Each group needs 3-5 people (e.g. 9 people: 1A-1E and 2A-2D). Groups stay the same
@@ -20,6 +22,7 @@ SESSION_CONFIGS = [
         rotation_offset: how many participants earlier sessions have already assigned,
         so treatment groups keep rotating evenly across sessions.
         timers: 45 seconds per decision (90 for practice) when on.
+        require_codes: stops anyone who joins without a code (for example via a session-wide link).
         """,
     ),
 ]
